@@ -68,10 +68,6 @@ plugins:
       include_source: true
       execute: false
 
-extra:
-  version:
-    provider: mike
-
 markdown_extensions:
   - admonition
   - attr_list
