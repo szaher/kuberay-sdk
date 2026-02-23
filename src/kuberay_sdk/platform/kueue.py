@@ -136,8 +136,6 @@ def list_queues(
 
     Example:
         >>> queues = list_queues(api_client, "my-namespace")
-        >>> [q["metadata"]["name"] for q in queues]
-        ['default-queue', 'gpu-queue']
     """
     custom_api = CustomObjectsApi(api_client)
     result = custom_api.list_namespaced_custom_object(
