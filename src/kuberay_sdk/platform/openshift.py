@@ -160,8 +160,6 @@ def create_route(
 
     Example:
         >>> route = create_route(api_client, "my-cluster-dashboard", "default", "my-cluster-head-svc")
-        >>> route["status"]["ingress"][0]["host"]
-        'my-cluster-dashboard-default.apps.cluster.example.com'
     """
     route_body: dict[str, Any] = {
         "apiVersion": f"{_ROUTE_GROUP}/{_ROUTE_VERSION}",
