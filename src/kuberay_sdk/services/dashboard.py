@@ -91,8 +91,7 @@ class DashboardClient:
             ) from exc
         except httpx.HTTPStatusError as exc:
             raise JobError(
-                f"Job submission failed with status {exc.response.status_code}: "
-                f"{exc.response.text}"
+                f"Job submission failed with status {exc.response.status_code}: {exc.response.text}"
             ) from exc
 
     def list_jobs(self) -> list[dict[str, Any]]:
@@ -144,12 +143,8 @@ class DashboardClient:
             ) from exc
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 404:
-                raise JobError(
-                    f"Job '{job_id}' not found on the Dashboard."
-                ) from exc
-            raise JobError(
-                f"Failed to get job status: {exc.response.status_code}"
-            ) from exc
+                raise JobError(f"Job '{job_id}' not found on the Dashboard.") from exc
+            raise JobError(f"Failed to get job status: {exc.response.status_code}") from exc
 
     def stop_job(self, job_id: str) -> None:
         """Stop a running job.
@@ -171,9 +166,7 @@ class DashboardClient:
                 reason=f"Connection failed: {exc}",
             ) from exc
         except httpx.HTTPStatusError as exc:
-            raise JobError(
-                f"Failed to stop job '{job_id}': {exc.response.status_code}"
-            ) from exc
+            raise JobError(f"Failed to stop job '{job_id}': {exc.response.status_code}") from exc
 
     def get_logs(self, job_id: str, tail: int | None = None) -> str:
         """Get the full logs of a job.

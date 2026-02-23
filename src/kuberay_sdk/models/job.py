@@ -98,8 +98,7 @@ class JobConfig(BaseModel):
                 del data["workers"]
             else:
                 raise ValueError(
-                    "Cannot use both 'workers' (simple mode) and 'worker_groups' "
-                    "(advanced mode). Choose one."
+                    "Cannot use both 'workers' (simple mode) and 'worker_groups' (advanced mode). Choose one."
                 )
         return data
 
@@ -114,15 +113,12 @@ class JobConfig(BaseModel):
 
         # Validate entrypoint is non-empty
         if not self.entrypoint or not self.entrypoint.strip():
-            raise SDKValidationError(
-                "JobConfig: 'entrypoint' must not be empty."
-            )
+            raise SDKValidationError("JobConfig: 'entrypoint' must not be empty.")
 
         # Validate queue + shutdown_after_finish constraint
         if self.queue and not self.shutdown_after_finish:
             raise SDKValidationError(
-                "JobConfig: when 'queue' is set (Kueue integration), "
-                "'shutdown_after_finish' must be True."
+                "JobConfig: when 'queue' is set (Kueue integration), 'shutdown_after_finish' must be True."
             )
 
         return self

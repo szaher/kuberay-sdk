@@ -1,0 +1,43 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["release/*"]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install deps
+        run: uv sync --all-extras
+
+      - name: Create Kind cluster
+        uses: helm/kind-action@v1
+
+      - name: Add KubeRay Helm repo
+        run: |
+          helm repo add kuberay https://ray-project.github.io/kuberay-helm/
+          helm repo update
+
+      - name: Install KubeRay operator
+        run: helm install kuberay-operator kuberay/kuberay-operator
+
+      - name: Wait for operator
+        run: kubectl wait --for=condition=available deployment/kuberay-operator --timeout=120s
+
+      - name: Run e2e tests
+        run: uv run pytest tests/e2e/ -v --timeout=300
+
+      - name: Cleanup
+        if: always()
+        run: kind delete cluster

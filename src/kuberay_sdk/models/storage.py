@@ -33,17 +33,11 @@ class StorageVolume(BaseModel):
     @model_validator(mode="after")
     def _validate_storage(self) -> StorageVolume:
         if self.size and self.existing_claim:
-            raise SDKValidationError(
-                "StorageVolume: exactly one of 'size' or 'existing_claim' must be set, not both."
-            )
+            raise SDKValidationError("StorageVolume: exactly one of 'size' or 'existing_claim' must be set, not both.")
         if not self.size and not self.existing_claim:
-            raise SDKValidationError(
-                "StorageVolume: exactly one of 'size' or 'existing_claim' must be set."
-            )
+            raise SDKValidationError("StorageVolume: exactly one of 'size' or 'existing_claim' must be set.")
         if not self.mount_path.startswith("/"):
-            raise SDKValidationError(
-                f"StorageVolume: mount_path must be an absolute path, got '{self.mount_path}'."
-            )
+            raise SDKValidationError(f"StorageVolume: mount_path must be an absolute path, got '{self.mount_path}'.")
         if self.access_mode not in _VALID_ACCESS_MODES:
             raise SDKValidationError(
                 f"StorageVolume: access_mode must be one of {_VALID_ACCESS_MODES}, got '{self.access_mode}'."

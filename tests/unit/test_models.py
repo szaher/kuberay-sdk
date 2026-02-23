@@ -67,7 +67,8 @@ class TestWorkerGroupCreation:
 
     def test_ray_start_params(self):
         wg = WorkerGroup(
-            name="custom", replicas=2,
+            name="custom",
+            replicas=2,
             ray_start_params={"num-cpus": "4"},
         )
         assert wg.ray_start_params == {"num-cpus": "4"}
@@ -470,14 +471,10 @@ class TestStorageVolume:
         with pytest.raises((ValidationError, ValueError)):
             StorageVolume(name="bad-vol", size="10Gi", mount_path="relative/path")
 
-    @pytest.mark.parametrize(
-        "mode", ["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany"]
-    )
+    @pytest.mark.parametrize("mode", ["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany"])
     def test_valid_access_modes(self, mode: str):
         """All three standard PVC access modes must be accepted."""
-        vol = StorageVolume(
-            name="vol", size="5Gi", mount_path="/mnt", access_mode=mode
-        )
+        vol = StorageVolume(name="vol", size="5Gi", mount_path="/mnt", access_mode=mode)
         assert vol.access_mode == mode
 
     def test_to_volume_spec_returns_dict(self):
@@ -491,9 +488,7 @@ class TestStorageVolume:
 
     def test_to_volume_spec_existing_claim(self):
         """to_volume_spec for existing claim uses the claim name."""
-        vol = StorageVolume(
-            name="models", existing_claim="shared-models", mount_path="/models"
-        )
+        vol = StorageVolume(name="models", existing_claim="shared-models", mount_path="/models")
         spec = vol.to_volume_spec()
         assert spec["persistentVolumeClaim"]["claimName"] == "shared-models"
 
@@ -519,9 +514,7 @@ class TestStorageVolume:
 
     def test_to_pvc_manifest_existing_claim_returns_none(self):
         """to_pvc_manifest for an existing claim must return None."""
-        vol = StorageVolume(
-            name="ext", existing_claim="my-pvc", mount_path="/ext"
-        )
+        vol = StorageVolume(name="ext", existing_claim="my-pvc", mount_path="/ext")
         assert vol.to_pvc_manifest(namespace="default") is None
 
     def test_default_access_mode_is_readwriteonce(self):
@@ -541,9 +534,7 @@ class TestStorageVolume:
 
     def test_to_pvc_manifest_with_storage_class(self):
         """to_pvc_manifest must include storageClassName when set."""
-        vol = StorageVolume(
-            name="fast", size="50Gi", mount_path="/fast", storage_class="ssd"
-        )
+        vol = StorageVolume(name="fast", size="50Gi", mount_path="/fast", storage_class="ssd")
         manifest = vol.to_pvc_manifest(namespace="prod")
         assert manifest["spec"]["storageClassName"] == "ssd"
 
@@ -564,9 +555,7 @@ class TestRuntimeEnv:
 
     def test_create_with_conda_packages(self):
         """RuntimeEnv can be created with conda packages (as dict)."""
-        conda_spec = {
-            "dependencies": ["numpy", "pandas", {"pip": ["torch"]}]
-        }
+        conda_spec = {"dependencies": ["numpy", "pandas", {"pip": ["torch"]}]}
         env = RuntimeEnv(conda=conda_spec)
         assert env.conda == conda_spec
         assert env.pip is None
@@ -672,24 +661,18 @@ class TestExperimentTracking:
 
     def test_mlflow_provider_valid(self):
         """The 'mlflow' provider must be accepted."""
-        et = ExperimentTracking(
-            provider="mlflow", tracking_uri="http://mlflow:5000"
-        )
+        et = ExperimentTracking(provider="mlflow", tracking_uri="http://mlflow:5000")
         assert et.provider == "mlflow"
         assert et.tracking_uri == "http://mlflow:5000"
 
     def test_invalid_provider_raises(self):
         """Any provider other than 'mlflow' must raise ValidationError."""
         with pytest.raises((ValidationError, ValueError)):
-            ExperimentTracking(
-                provider="wandb", tracking_uri="http://wandb:8080"
-            )
+            ExperimentTracking(provider="wandb", tracking_uri="http://wandb:8080")
 
     def test_to_env_vars_includes_tracking_uri(self):
         """to_env_vars must include MLFLOW_TRACKING_URI."""
-        et = ExperimentTracking(
-            provider="mlflow", tracking_uri="http://mlflow:5000"
-        )
+        et = ExperimentTracking(provider="mlflow", tracking_uri="http://mlflow:5000")
         env = et.to_env_vars()
         assert "MLFLOW_TRACKING_URI" in env
         assert env["MLFLOW_TRACKING_URI"] == "http://mlflow:5000"
@@ -707,9 +690,7 @@ class TestExperimentTracking:
 
     def test_to_env_vars_without_experiment_name(self):
         """to_env_vars must omit MLFLOW_EXPERIMENT_NAME when not set."""
-        et = ExperimentTracking(
-            provider="mlflow", tracking_uri="http://mlflow:5000"
-        )
+        et = ExperimentTracking(provider="mlflow", tracking_uri="http://mlflow:5000")
         env = et.to_env_vars()
         assert "MLFLOW_EXPERIMENT_NAME" not in env
 

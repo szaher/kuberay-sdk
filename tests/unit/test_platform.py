@@ -341,8 +341,11 @@ class TestResolveHardwareProfile:
         mock_custom_api = MagicMock()
         mock_custom_api.get_namespaced_custom_object.side_effect = ApiException(status=404, reason="Not Found")
 
-        with patch("kuberay_sdk.platform.openshift.CustomObjectsApi", return_value=mock_custom_api), pytest.raises(Exception, match="[Hh]ardware[Pp]rofile|not found"):
-                resolve_hardware_profile(mock_client, "nonexistent", "redhat-ods-applications")
+        with (
+            patch("kuberay_sdk.platform.openshift.CustomObjectsApi", return_value=mock_custom_api),
+            pytest.raises(Exception, match="[Hh]ardware[Pp]rofile|not found"),
+        ):
+            resolve_hardware_profile(mock_client, "nonexistent", "redhat-ods-applications")
 
     def test_calls_correct_api_group_and_version(self):
         """Verifies the correct API group and version are used."""

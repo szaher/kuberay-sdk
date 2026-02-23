@@ -83,8 +83,10 @@ class TestJobCRDLifecycle:
 
         # ── Step 1: Create ──
         created_cr = make_rayjob_cr(
-            name=job_name, namespace=namespace,
-            entrypoint=entrypoint, state="Pending",
+            name=job_name,
+            namespace=namespace,
+            entrypoint=entrypoint,
+            state="Pending",
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
 

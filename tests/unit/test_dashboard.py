@@ -63,9 +63,7 @@ class TestDashboardLogStreaming:
         # Build a mock streaming response whose iter_lines yields lines
         mock_stream_response = MagicMock()
         mock_stream_response.raise_for_status = MagicMock()
-        mock_stream_response.iter_lines.return_value = iter(
-            ["line-1", "line-2", "", "line-3"]
-        )
+        mock_stream_response.iter_lines.return_value = iter(["line-1", "line-2", "", "line-3"])
         # client.stream() returns a context manager
         mock_stream_ctx = MagicMock()
         mock_stream_ctx.__enter__ = MagicMock(return_value=mock_stream_response)
@@ -83,9 +81,7 @@ class TestDashboardLogStreaming:
         )
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_stream_logs_follow_mode_sends_follow_param(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_stream_logs_follow_mode_sends_follow_param(self, mock_client_cls: MagicMock) -> None:
         """When follow=True, the request must include params={'follow': 'true'}."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -107,9 +103,7 @@ class TestDashboardLogStreaming:
         )
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_stream_logs_raises_dashboard_unreachable_on_connection_error(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_stream_logs_raises_dashboard_unreachable_on_connection_error(self, mock_client_cls: MagicMock) -> None:
         """stream_logs must raise DashboardUnreachableError on ConnectError."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -138,9 +132,7 @@ class TestDashboardLogStreaming:
         )
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_logs_tail_returns_last_n_lines(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_logs_tail_returns_last_n_lines(self, mock_client_cls: MagicMock) -> None:
         """get_logs(tail=N) should return only the last N lines."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -155,9 +147,7 @@ class TestDashboardLogStreaming:
         assert result == "line4\nline5"
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_logs_raises_on_connection_error(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_logs_raises_on_connection_error(self, mock_client_cls: MagicMock) -> None:
         """get_logs must raise DashboardUnreachableError on ConnectError."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -200,9 +190,7 @@ class TestDashboardURL:
     """Verify PortForwardManager URL discovery (Route -> Ingress -> port-forward)."""
 
     @patch("kubernetes.client.CustomObjectsApi")
-    def test_port_forward_manager_check_route(
-        self, mock_custom_api_cls: MagicMock
-    ) -> None:
+    def test_port_forward_manager_check_route(self, mock_custom_api_cls: MagicMock) -> None:
         """When an OpenShift Route exists for the head-svc, return its URL."""
         mock_api = MagicMock()
         mock_custom_api_cls.return_value = mock_api
@@ -231,9 +219,7 @@ class TestDashboardURL:
         )
 
     @patch("kubernetes.client.NetworkingV1Api")
-    def test_port_forward_manager_check_ingress(
-        self, mock_networking_cls: MagicMock
-    ) -> None:
+    def test_port_forward_manager_check_ingress(self, mock_networking_cls: MagicMock) -> None:
         """When a Kubernetes Ingress exists for the head-svc, return its URL."""
         mock_api = MagicMock()
         mock_networking_cls.return_value = mock_api
@@ -294,9 +280,7 @@ class TestDashboardMetrics:
     """Verify cluster metrics and job progress retrieval."""
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_cluster_metrics_returns_dict(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_cluster_metrics_returns_dict(self, mock_client_cls: MagicMock) -> None:
         """get_cluster_metrics should return the JSON dict from /api/cluster_status."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -322,9 +306,7 @@ class TestDashboardMetrics:
         )
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_cluster_metrics_raises_on_connection_error(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_cluster_metrics_raises_on_connection_error(self, mock_client_cls: MagicMock) -> None:
         """get_cluster_metrics must raise DashboardUnreachableError on ConnectError."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -335,9 +317,7 @@ class TestDashboardMetrics:
             dc.get_cluster_metrics()
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_job_progress_returns_dict(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_job_progress_returns_dict(self, mock_client_cls: MagicMock) -> None:
         """get_job_progress should return the JSON dict from /api/jobs/{job_id}."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 
@@ -358,9 +338,7 @@ class TestDashboardMetrics:
         )
 
     @patch("kuberay_sdk.services.dashboard.httpx.Client")
-    def test_get_job_progress_raises_on_connection_error(
-        self, mock_client_cls: MagicMock
-    ) -> None:
+    def test_get_job_progress_raises_on_connection_error(self, mock_client_cls: MagicMock) -> None:
         """get_job_progress must raise DashboardUnreachableError on ConnectError."""
         mock_client = _setup_httpx_client_mock(mock_client_cls)
 

@@ -53,7 +53,8 @@ def _make_hardware_profile_cr(
     if scheduling_type == "Node":
         scheduling["node"] = {
             "nodeSelector": node_selector or {"nvidia.com/gpu.present": "true"},
-            "tolerations": tolerations or [
+            "tolerations": tolerations
+            or [
                 {
                     "key": "nvidia.com/gpu",
                     "operator": "Exists",
@@ -190,7 +191,9 @@ class TestHardwareProfileResolution:
         """Missing HardwareProfile should raise KubeRayError."""
         mock_api_client = MagicMock()
         api_exception = type(
-            "ApiException", (Exception,), {"status": 404, "reason": "Not Found"},
+            "ApiException",
+            (Exception,),
+            {"status": 404, "reason": "Not Found"},
         )()
 
         with patch("kuberay_sdk.platform.openshift.CustomObjectsApi") as mock_custom_cls:
@@ -263,7 +266,9 @@ class TestKueueQueueInjection:
         labels = {"app": "ray"}
 
         result = inject_queue_labels(
-            labels, "gpu-queue", priority_class="high-priority",
+            labels,
+            "gpu-queue",
+            priority_class="high-priority",
         )
 
         assert result[KUEUE_QUEUE_LABEL] == "gpu-queue"

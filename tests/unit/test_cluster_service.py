@@ -256,8 +256,8 @@ class TestGetCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(name="my-cluster", namespace="default", state="ready")
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(
+            name="my-cluster", namespace="default", state="ready"
         )
         status = cluster_service.get_status("my-cluster", "default")
         assert isinstance(status, ClusterStatus)
@@ -269,9 +269,7 @@ class TestGetCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(head_ready=True)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(head_ready=True)
         status = cluster_service.get_status("test-cluster", "default")
         assert status.head_ready is True
 
@@ -280,9 +278,7 @@ class TestGetCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(head_ready=False)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(head_ready=False)
         status = cluster_service.get_status("test-cluster", "default")
         assert status.head_ready is False
 
@@ -291,9 +287,7 @@ class TestGetCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(workers=3)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(workers=3)
         status = cluster_service.get_status("test-cluster", "default")
         assert status.workers_desired == 3
 
@@ -302,9 +296,7 @@ class TestGetCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(ray_version="2.39.0")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(ray_version="2.39.0")
         status = cluster_service.get_status("test-cluster", "default")
         assert status.ray_version == "2.39.0"
 
@@ -396,9 +388,7 @@ class TestScaleCluster:
         mock_custom_objects_api: MagicMock,
     ):
         # First, set up get to return current cluster state
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(workers=2)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(workers=2)
         cluster_service.scale("test-cluster", "default", 5)
         mock_custom_objects_api.patch_namespaced_custom_object.assert_called_once()
 
@@ -407,9 +397,7 @@ class TestScaleCluster:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(workers=2)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(workers=2)
         cluster_service.scale("test-cluster", "default", 10)
         call_kwargs = mock_custom_objects_api.patch_namespaced_custom_object.call_args
         body = call_kwargs[1].get("body") or call_kwargs[0][-1]
@@ -424,9 +412,7 @@ class TestScaleCluster:
         mock_custom_objects_api: MagicMock,
     ):
         """Scaling to zero workers may be invalid (depends on design)."""
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(workers=2)
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(workers=2)
         # Depending on implementation, this might raise or be allowed.
         # We test that it doesn't silently corrupt state.
         with pytest.raises((ValidationError, ValueError)):
@@ -485,8 +471,8 @@ class TestWaitUntilReady:
         cluster_service: ClusterService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_raycluster_cr(state="ready", head_ready=True)
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_raycluster_cr(
+            state="ready", head_ready=True
         )
         # Should not raise and should return quickly
         cluster_service.wait_until_ready("test-cluster", "default", timeout=5)
@@ -522,7 +508,9 @@ class TestWaitUntilReady:
 
         with patch("time.sleep"), pytest.raises(TimeoutError):
             cluster_service.wait_until_ready(
-                "test-cluster", "default", timeout=0.01,
+                "test-cluster",
+                "default",
+                timeout=0.01,
             )
 
     def test_wait_checks_head_pod_ready_condition(
@@ -565,7 +553,9 @@ class TestIdempotentCreate:
         """Creating a cluster that already exists with the same spec should succeed."""
         # Simulate K8s 409 Conflict on create
         api_exception = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_exception
 
@@ -593,7 +583,9 @@ class TestIdempotentCreate:
     ):
         """Creating a cluster that already exists with a different spec should fail."""
         api_exception = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_exception
 
@@ -621,7 +613,9 @@ class TestIdempotentCreate:
     ):
         """Different ray_version should trigger ResourceConflictError."""
         api_exception = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_exception
 

@@ -245,7 +245,9 @@ class TestServiceCRDRayClusterConfig:
 
     def test_worker_resources(self):
         svc = _build_default_service(
-            cpus_per_worker=2.0, memory_per_worker="4Gi", gpus_per_worker=1,
+            cpus_per_worker=2.0,
+            memory_per_worker="4Gi",
+            gpus_per_worker=1,
         )
         crd = svc.to_crd()
         container = _worker_container(crd)

@@ -84,9 +84,7 @@ class ServiceConfig(BaseModel):
 
         # One of import_path or serve_config_v2 must be provided
         if not self.import_path and not self.serve_config_v2:
-            raise SDKValidationError(
-                "ServiceConfig: either 'import_path' or 'serve_config_v2' must be provided."
-            )
+            raise SDKValidationError("ServiceConfig: either 'import_path' or 'serve_config_v2' must be provided.")
 
         return self
 
