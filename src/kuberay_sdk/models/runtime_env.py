@@ -26,9 +26,7 @@ class RuntimeEnv(BaseModel):
     @model_validator(mode="after")
     def _validate_env(self) -> RuntimeEnv:
         if self.pip and self.conda:
-            raise SDKValidationError(
-                "RuntimeEnv: 'pip' and 'conda' are mutually exclusive (Ray constraint)."
-            )
+            raise SDKValidationError("RuntimeEnv: 'pip' and 'conda' are mutually exclusive (Ray constraint).")
         return self
 
     def to_dict(self) -> dict:  # type: ignore[type-arg]
@@ -74,9 +72,7 @@ class ExperimentTracking(BaseModel):
     @model_validator(mode="after")
     def _validate_provider(self) -> ExperimentTracking:
         if self.provider != "mlflow":
-            raise SDKValidationError(
-                f"ExperimentTracking: only 'mlflow' provider is supported, got '{self.provider}'."
-            )
+            raise SDKValidationError(f"ExperimentTracking: only 'mlflow' provider is supported, got '{self.provider}'.")
         return self
 
     def to_env_vars(self) -> dict[str, str]:

@@ -435,9 +435,7 @@ class TestJobCRDRawOverrides:
         assert crd["spec"]["ttlSecondsAfterFinished"] == 3600
 
     def test_raw_overrides_do_not_remove_required_fields(self):
-        job = _build_default_job(
-            raw_overrides={"metadata": {"labels": {"extra": "label"}}}
-        )
+        job = _build_default_job(raw_overrides={"metadata": {"labels": {"extra": "label"}}})
         crd = job.to_crd_dict()
         assert crd["metadata"]["name"] == "test-job"
         assert crd["metadata"]["labels"]["extra"] == "label"

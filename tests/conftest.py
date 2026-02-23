@@ -49,7 +49,7 @@ def mock_custom_objects_api(mock_api_client: MagicMock) -> MagicMock:
 def mock_k8s_client(mock_api_client: MagicMock, mock_custom_objects_api: MagicMock) -> MagicMock:
     """Patch kubernetes client creation to return mocks."""
     with (
-        patch("kubernetes.client.ApiClient", return_value=mock_api_client),
+        patch("kuberay_sdk.client.get_k8s_client", return_value=mock_api_client),
         patch("kubernetes.client.CustomObjectsApi", return_value=mock_custom_objects_api),
     ):
         yield mock_custom_objects_api

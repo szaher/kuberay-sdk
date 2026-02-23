@@ -232,9 +232,7 @@ class ClusterService:
             >>> svc.scale("my-cluster", "default", 8)
         """
         if workers < 1:
-            raise ValidationError(
-                f"Cannot scale to {workers} workers. Workers must be >= 1."
-            )
+            raise ValidationError(f"Cannot scale to {workers} workers. Workers must be >= 1.")
 
         # Get the current cluster to know the existing spec structure
         cr = self._api.get_namespaced_custom_object(
@@ -259,13 +257,15 @@ class ClusterService:
                 else:
                     patched_specs.append(ws)
         else:
-            patched_specs = [{
-                "groupName": "default-workers",
-                "replicas": workers,
-                "minReplicas": workers,
-                "maxReplicas": workers,
-                "rayStartParams": {},
-            }]
+            patched_specs = [
+                {
+                    "groupName": "default-workers",
+                    "replicas": workers,
+                    "minReplicas": workers,
+                    "maxReplicas": workers,
+                    "rayStartParams": {},
+                }
+            ]
 
         patch_body: dict[str, Any] = {
             "spec": {
@@ -336,8 +336,7 @@ class ClusterService:
                 job_status = job.get("status", {}).get("jobStatus", "")
                 if job_status.lower() in ("running", "pending"):
                     logger.warning(
-                        "Job '%s' is still %s on cluster '%s'. "
-                        "Use force=True to delete anyway.",
+                        "Job '%s' is still %s on cluster '%s'. Use force=True to delete anyway.",
                         job.get("metadata", {}).get("name", "unknown"),
                         job_status,
                         cluster_name,

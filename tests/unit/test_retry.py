@@ -100,9 +100,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_succeeds_on_first_attempt_no_retry(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_succeeds_on_first_attempt_no_retry(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=3)
@@ -115,9 +113,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_retries_on_transient_error_then_succeeds(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_retries_on_transient_error_then_succeeds(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         # monotonic() called: once at start of each attempt (elapsed check) +
         # once before computing remaining time for delay
         mock_monotonic.return_value = 0.0
@@ -139,9 +135,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_does_not_retry_non_transient_error(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_does_not_retry_non_transient_error(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=3)
@@ -154,9 +148,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_does_not_retry_value_error(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_does_not_retry_value_error(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=5)
@@ -169,9 +161,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_exponential_backoff_delays(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_exponential_backoff_delays(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=5, backoff_factor=0.5, timeout=60.0)
@@ -227,9 +217,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_configurable_max_attempts(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_configurable_max_attempts(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
         attempts = 0
 
@@ -245,9 +233,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_configurable_backoff_factor(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_configurable_backoff_factor(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=3, backoff_factor=2.0, timeout=60.0)
@@ -263,9 +249,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_configurable_timeout(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_configurable_timeout(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         # timeout=5.0 -- exceed on second attempt
         mock_monotonic.side_effect = [0.0, 6.0]
 
@@ -279,16 +263,14 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_delay_capped_by_remaining_timeout(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_delay_capped_by_remaining_timeout(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         # Timeout is 10s. After attempt 1, elapsed is 8s, so remaining=2s.
         # Backoff would be 5.0*(2^0) = 5.0 but should be capped at 2.0.
         mock_monotonic.side_effect = [
-            0.0,   # start_time
-            0.0,   # elapsed check attempt 1
-            8.0,   # remaining check after attempt 1 failure
-            8.0,   # elapsed check attempt 2
+            0.0,  # start_time
+            0.0,  # elapsed check attempt 1
+            8.0,  # remaining check after attempt 1 failure
+            8.0,  # elapsed check attempt 2
         ]
 
         @with_retry(max_attempts=3, backoff_factor=5.0, timeout=10.0)
@@ -305,9 +287,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_preserves_function_name_and_docstring(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_preserves_function_name_and_docstring(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         @with_retry()
         def my_function() -> None:
             """My docstring."""
@@ -317,9 +297,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_passes_args_and_kwargs_through(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_passes_args_and_kwargs_through(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         mock_monotonic.return_value = 0.0
 
         @with_retry(max_attempts=1)
@@ -330,9 +308,7 @@ class TestWithRetry:
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_timeout_check_before_first_attempt(
-        self, mock_monotonic: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_timeout_check_before_first_attempt(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
         """If timeout is already exceeded at the start, raise TimeoutError immediately."""
         # elapsed >= timeout right away
         mock_monotonic.side_effect = [0.0, 100.0]
@@ -351,8 +327,8 @@ class TestWithRetry:
     ) -> None:
         """When remaining time is <= 0 after a transient failure, stop immediately."""
         mock_monotonic.side_effect = [
-            0.0,   # start_time
-            0.0,   # elapsed check attempt 1
+            0.0,  # start_time
+            0.0,  # elapsed check attempt 1
             11.0,  # remaining check: 10-11 = -1 <= 0, break
         ]
 
@@ -380,8 +356,13 @@ class TestIdempotentCreate:
         desired_spec = {"kind": "RayCluster", "metadata": {"name": "cluster-1"}}
 
         result = idempotent_create(
-            create_fn, get_fn, compare_fn, desired_spec,
-            "group", "v1", namespace="default",
+            create_fn,
+            get_fn,
+            compare_fn,
+            desired_spec,
+            "group",
+            "v1",
+            namespace="default",
         )
 
         assert result == {"metadata": {"name": "cluster-1"}}
@@ -402,8 +383,13 @@ class TestIdempotentCreate:
         }
 
         result = idempotent_create(
-            create_fn, get_fn, compare_fn, desired_spec,
-            "group", "v1", namespace="default",
+            create_fn,
+            get_fn,
+            compare_fn,
+            desired_spec,
+            "group",
+            "v1",
+            namespace="default",
         )
 
         assert result == existing_resource
@@ -425,8 +411,13 @@ class TestIdempotentCreate:
 
         with pytest.raises(ResourceConflictError) as exc_info:
             idempotent_create(
-                create_fn, get_fn, compare_fn, desired_spec,
-                "group", "v1", namespace="default",
+                create_fn,
+                get_fn,
+                compare_fn,
+                desired_spec,
+                "group",
+                "v1",
+                namespace="default",
             )
 
         assert "already exists" in str(exc_info.value)
@@ -509,9 +500,14 @@ class TestIdempotentCreate:
         desired_spec = {"kind": "RayCluster", "metadata": {"name": "c1"}}
 
         idempotent_create(
-            create_fn, get_fn, compare_fn, desired_spec,
-            "ray.io", "v1",
-            namespace="default", plural="rayclusters",
+            create_fn,
+            get_fn,
+            compare_fn,
+            desired_spec,
+            "ray.io",
+            "v1",
+            namespace="default",
+            plural="rayclusters",
         )
 
         expected_args = ("ray.io", "v1")

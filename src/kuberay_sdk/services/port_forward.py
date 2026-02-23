@@ -152,11 +152,7 @@ class PortForwardManager:
                         if rule.http and rule.http.paths:
                             for path in rule.http.paths:
                                 backend = path.backend
-                                if (
-                                    backend
-                                    and backend.service
-                                    and backend.service.name == head_svc_name
-                                ):
+                                if backend and backend.service and backend.service.name == head_svc_name:
                                     host = rule.host or ""
                                     if host:
                                         # Check TLS

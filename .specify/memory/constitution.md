@@ -126,7 +126,7 @@ curve short, and maintenance burden manageable.
 
 ## Tech Stack & Constraints
 
-- **Language**: Python 3.9+
+- **Language**: Python 3.10+
 - **Kubernetes Client**: official `kubernetes` Python client
 - **Authentication**: kube-authkit
 - **Target Platform**: Any environment with kubeconfig access
@@ -166,4 +166,4 @@ other guidance when conflicts arise.
   verify adherence to these principles. Deviations MUST be
   explicitly justified and documented.
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-23 | **Last Amended**: 2026-02-23
+**Version**: 1.0.1 | **Ratified**: 2026-02-23 | **Last Amended**: 2026-02-23

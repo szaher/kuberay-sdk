@@ -67,9 +67,7 @@ class TestFullClusterLifecycle:
         namespace = "ml-team"
 
         # ── Step 1: Create ──
-        created_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace, workers=2
-        )
+        created_cr = make_raycluster_cr(name=cluster_name, namespace=namespace, workers=2)
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
 
         result = cluster_service.create(
@@ -87,12 +85,18 @@ class TestFullClusterLifecycle:
         # ── Step 2: Wait until ready ──
         # Simulate: first poll returns "creating", second returns "ready" with head ready
         creating_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace,
-            workers=2, state="creating", head_ready=False,
+            name=cluster_name,
+            namespace=namespace,
+            workers=2,
+            state="creating",
+            head_ready=False,
         )
         ready_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace,
-            workers=2, state="ready", head_ready=True,
+            name=cluster_name,
+            namespace=namespace,
+            workers=2,
+            state="ready",
+            head_ready=True,
         )
 
         mock_custom_objects_api.get_namespaced_custom_object.side_effect = [
@@ -124,8 +128,11 @@ class TestFullClusterLifecycle:
 
         # ── Step 4: Get status after scaling ──
         scaled_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace,
-            workers=4, state="ready", head_ready=True,
+            name=cluster_name,
+            namespace=namespace,
+            workers=4,
+            state="ready",
+            head_ready=True,
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = scaled_cr
 
@@ -167,7 +174,9 @@ class TestFullClusterLifecycle:
 
         # ── First create: succeeds normally ──
         first_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace, workers=2,
+            name=cluster_name,
+            namespace=namespace,
+            workers=2,
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = first_cr
 
@@ -182,7 +191,9 @@ class TestFullClusterLifecycle:
 
         # ── Second create: 409 Conflict, but spec matches ──
         api_conflict = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.reset_mock()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_conflict
@@ -197,7 +208,9 @@ class TestFullClusterLifecycle:
         from kuberay_sdk.models.cluster import ClusterConfig
 
         desired_config = ClusterConfig(
-            name=cluster_name, namespace=namespace, workers=2,
+            name=cluster_name,
+            namespace=namespace,
+            workers=2,
         )
         desired_body = desired_config.to_crd_dict()
         mock_custom_objects_api.get_namespaced_custom_object.return_value = desired_body
@@ -223,13 +236,17 @@ class TestFullClusterLifecycle:
 
         # Create returns 409 Conflict
         api_conflict = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_conflict
 
         # The existing CR has a different worker count (5 vs requested 2)
         existing_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace, workers=5,
+            name=cluster_name,
+            namespace=namespace,
+            workers=5,
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = existing_cr
 
@@ -256,7 +273,9 @@ class TestFullClusterLifecycle:
         ]
 
         created_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace, workers=4,
+            name=cluster_name,
+            namespace=namespace,
+            workers=4,
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
 
@@ -283,8 +302,11 @@ class TestFullClusterLifecycle:
 
         # ── Wait until ready ──
         ready_cr = make_raycluster_cr(
-            name=cluster_name, namespace=namespace,
-            workers=4, state="ready", head_ready=True,
+            name=cluster_name,
+            namespace=namespace,
+            workers=4,
+            state="ready",
+            head_ready=True,
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = ready_cr
 

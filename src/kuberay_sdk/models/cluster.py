@@ -59,18 +59,15 @@ class WorkerGroup(BaseModel):
 
         if effective_min > self.replicas:
             raise SDKValidationError(
-                f"WorkerGroup '{self.name}': min_replicas ({effective_min}) "
-                f"must be <= replicas ({self.replicas})."
+                f"WorkerGroup '{self.name}': min_replicas ({effective_min}) must be <= replicas ({self.replicas})."
             )
         if self.replicas > effective_max:
             raise SDKValidationError(
-                f"WorkerGroup '{self.name}': replicas ({self.replicas}) "
-                f"must be <= max_replicas ({effective_max})."
+                f"WorkerGroup '{self.name}': replicas ({self.replicas}) must be <= max_replicas ({effective_max})."
             )
         if effective_min > effective_max:
             raise SDKValidationError(
-                f"WorkerGroup '{self.name}': min_replicas ({effective_min}) "
-                f"must be <= max_replicas ({effective_max})."
+                f"WorkerGroup '{self.name}': min_replicas ({effective_min}) must be <= max_replicas ({effective_max})."
             )
         return self
 
@@ -164,8 +161,7 @@ class ClusterConfig(BaseModel):
                 del data["workers"]
             else:
                 raise ValueError(
-                    "Cannot use both 'workers' (simple mode) and 'worker_groups' "
-                    "(advanced mode). Choose one."
+                    "Cannot use both 'workers' (simple mode) and 'worker_groups' (advanced mode). Choose one."
                 )
         return data
 
@@ -328,14 +324,16 @@ class ClusterConfig(BaseModel):
                 )
                 ray_start_params = dict(wg.ray_start_params) if wg.ray_start_params else {}
 
-                worker_group_specs.append({
-                    "groupName": wg.name,
-                    "replicas": wg.replicas,
-                    "minReplicas": effective_min,
-                    "maxReplicas": effective_max,
-                    "rayStartParams": ray_start_params,
-                    "template": {"spec": worker_pod_spec},
-                })
+                worker_group_specs.append(
+                    {
+                        "groupName": wg.name,
+                        "replicas": wg.replicas,
+                        "minReplicas": effective_min,
+                        "maxReplicas": effective_max,
+                        "rayStartParams": ray_start_params,
+                        "template": {"spec": worker_pod_spec},
+                    }
+                )
         else:
             # Simple mode: single default worker group
             worker_container = self._build_container(
@@ -352,14 +350,16 @@ class ClusterConfig(BaseModel):
                 node_selector=self.node_selector,
                 tolerations=self.tolerations,
             )
-            worker_group_specs.append({
-                "groupName": "default-workers",
-                "replicas": self.workers,
-                "minReplicas": self.workers,
-                "maxReplicas": self.workers,
-                "rayStartParams": {},
-                "template": {"spec": worker_pod_spec},
-            })
+            worker_group_specs.append(
+                {
+                    "groupName": "default-workers",
+                    "replicas": self.workers,
+                    "minReplicas": self.workers,
+                    "maxReplicas": self.workers,
+                    "rayStartParams": {},
+                    "template": {"spec": worker_pod_spec},
+                }
+            )
 
         # Build spec
         spec: dict[str, Any] = {

@@ -407,8 +407,8 @@ class TestJobServiceGetStatus:
         job_service: JobService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayjob_cr(name="my-job", state="Running")
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayjob_cr(
+            name="my-job", state="Running"
         )
         status = job_service.get_status("my-job", "default")
         assert isinstance(status, JobStatus)
@@ -431,9 +431,7 @@ class TestJobServiceGetStatus:
         mock_dashboard_client: MagicMock,
     ):
         """get_dashboard_job_status should call DashboardClient."""
-        result = job_service.get_dashboard_job_status(
-            mock_dashboard_client, "raysubmit_test123"
-        )
+        result = job_service.get_dashboard_job_status(mock_dashboard_client, "raysubmit_test123")
         mock_dashboard_client.get_job_status.assert_called_once_with("raysubmit_test123")
         assert result is not None
 
@@ -491,9 +489,7 @@ class TestJobServiceWait:
         job_service: JobService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayjob_cr(state="Succeeded")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayjob_cr(state="Succeeded")
         status = job_service.wait("test-job", "default", timeout=5)
         assert isinstance(status, JobStatus)
 
@@ -550,12 +546,8 @@ class TestJobServiceWaitDashboard:
         job_service: JobService,
         mock_dashboard_client: MagicMock,
     ):
-        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(
-            status="SUCCEEDED"
-        )
-        result = job_service.wait_dashboard_job(
-            mock_dashboard_client, "raysubmit_test123", timeout=5
-        )
+        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(status="SUCCEEDED")
+        result = job_service.wait_dashboard_job(mock_dashboard_client, "raysubmit_test123", timeout=5)
         assert result is not None
 
     def test_polls_until_complete(
@@ -569,9 +561,7 @@ class TestJobServiceWaitDashboard:
             make_dashboard_job_response(status="SUCCEEDED"),
         ]
         with patch("time.sleep"):
-            job_service.wait_dashboard_job(
-                mock_dashboard_client, "raysubmit_test123", timeout=60
-            )
+            job_service.wait_dashboard_job(mock_dashboard_client, "raysubmit_test123", timeout=60)
         assert mock_dashboard_client.get_job_status.call_count == 3
 
     def test_timeout_raises(
@@ -579,23 +569,15 @@ class TestJobServiceWaitDashboard:
         job_service: JobService,
         mock_dashboard_client: MagicMock,
     ):
-        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(
-            status="RUNNING"
-        )
+        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(status="RUNNING")
         with patch("time.sleep"), pytest.raises(TimeoutError):
-            job_service.wait_dashboard_job(
-                mock_dashboard_client, "raysubmit_test123", timeout=0.01
-            )
+            job_service.wait_dashboard_job(mock_dashboard_client, "raysubmit_test123", timeout=0.01)
 
     def test_failed_job_returns_status(
         self,
         job_service: JobService,
         mock_dashboard_client: MagicMock,
     ):
-        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(
-            status="FAILED"
-        )
-        result = job_service.wait_dashboard_job(
-            mock_dashboard_client, "raysubmit_test123", timeout=5
-        )
+        mock_dashboard_client.get_job_status.return_value = make_dashboard_job_response(status="FAILED")
+        result = job_service.wait_dashboard_job(mock_dashboard_client, "raysubmit_test123", timeout=5)
         assert result is not None

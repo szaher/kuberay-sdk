@@ -221,8 +221,8 @@ class TestGetServiceStatus:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="my-llm", namespace="default", state="Running")
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(
+            name="my-llm", namespace="default", state="Running"
         )
         status = service_service.get_status("my-llm", "default")
         assert isinstance(status, ServiceStatus)
@@ -234,9 +234,7 @@ class TestGetServiceStatus:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(state="Running")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(state="Running")
         status = service_service.get_status("test-service", "default")
         assert status.state == "RUNNING"
 
@@ -245,9 +243,7 @@ class TestGetServiceStatus:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(state="Deploying")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(state="Deploying")
         status = service_service.get_status("test-service", "default")
         assert status.state == "DEPLOYING"
 
@@ -266,9 +262,7 @@ class TestGetServiceStatus:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr()
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr()
         service_service.get_status("test-service", "default")
         call_kwargs = mock_custom_objects_api.get_namespaced_custom_object.call_args
         assert call_kwargs[1].get("plural") == "rayservices"
@@ -349,9 +343,7 @@ class TestUpdateService:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="test-service")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(name="test-service")
         service_service.update("test-service", "default", num_replicas=4)
         mock_custom_objects_api.patch_namespaced_custom_object.assert_called_once()
 
@@ -360,9 +352,7 @@ class TestUpdateService:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="test-service")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(name="test-service")
         service_service.update("test-service", "default", num_replicas=5)
         call_kwargs = mock_custom_objects_api.patch_namespaced_custom_object.call_args
         body = call_kwargs[1].get("body") or call_kwargs[0][-1]
@@ -377,9 +367,7 @@ class TestUpdateService:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="test-service")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(name="test-service")
         service_service.update("test-service", "default", import_path="new_module:app")
         call_kwargs = mock_custom_objects_api.patch_namespaced_custom_object.call_args
         body = call_kwargs[1].get("body") or call_kwargs[0][-1]
@@ -392,11 +380,10 @@ class TestUpdateService:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="test-service")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(name="test-service")
         service_service.update(
-            "test-service", "default",
+            "test-service",
+            "default",
             num_replicas=3,
             import_path="updated:app",
         )
@@ -422,9 +409,7 @@ class TestUpdateService:
         service_service: ServiceService,
         mock_custom_objects_api: MagicMock,
     ):
-        mock_custom_objects_api.get_namespaced_custom_object.return_value = (
-            make_rayservice_cr(name="test-service")
-        )
+        mock_custom_objects_api.get_namespaced_custom_object.return_value = make_rayservice_cr(name="test-service")
         service_service.update("test-service", "ml-team", num_replicas=2)
         call_kwargs = mock_custom_objects_api.patch_namespaced_custom_object.call_args
         assert call_kwargs[1].get("plural") == "rayservices"
@@ -487,7 +472,9 @@ class TestIdempotentCreateService:
     ):
         """Creating a service that already exists with the same spec should succeed."""
         api_exception = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_exception
 
@@ -516,7 +503,9 @@ class TestIdempotentCreateService:
     ):
         """Creating a service that already exists with a different spec should fail."""
         api_exception = type(
-            "ApiException", (Exception,), {"status": 409, "reason": "Conflict"},
+            "ApiException",
+            (Exception,),
+            {"status": 409, "reason": "Conflict"},
         )()
         mock_custom_objects_api.create_namespaced_custom_object.side_effect = api_exception
 

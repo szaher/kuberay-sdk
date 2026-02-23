@@ -230,7 +230,8 @@ class TestCRDWorkerGroupSpecs:
 
     def test_worker_resources(self):
         cluster = _build_default_cluster(
-            cpus_per_worker=2.0, memory_per_worker="4Gi",
+            cpus_per_worker=2.0,
+            memory_per_worker="4Gi",
         )
         crd = cluster.to_crd()
         container = _worker_container(crd)
@@ -426,8 +427,7 @@ class TestCRDSchemaShape:
         cluster = _build_default_cluster()
         crd = cluster.to_crd()
         group = crd["spec"]["workerGroupSpecs"][0]
-        required_keys = {"groupName", "replicas", "minReplicas", "maxReplicas",
-                         "rayStartParams", "template"}
+        required_keys = {"groupName", "replicas", "minReplicas", "maxReplicas", "rayStartParams", "template"}
         assert required_keys.issubset(set(group.keys()))
 
     def test_head_group_spec_structure(self):

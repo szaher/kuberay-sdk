@@ -68,7 +68,9 @@ class TestServiceLifecycle:
 
         # ── Step 1: Create ──
         created_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
 
@@ -105,7 +107,9 @@ class TestServiceLifecycle:
 
         # ── Step 2: Get status ──
         running_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = running_cr
 
@@ -120,7 +124,9 @@ class TestServiceLifecycle:
         # The update method fetches the current CR, parses serveConfigV2,
         # modifies the deployment config, and patches.
         current_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = current_cr
 
@@ -172,7 +178,9 @@ class TestServiceLifecycle:
         ]
 
         created_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
 
@@ -223,7 +231,9 @@ class TestServiceLifecycle:
 
         # Create
         created_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.create_namespaced_custom_object.return_value = created_cr
         service_service.create(
@@ -258,7 +268,9 @@ class TestServiceLifecycle:
         namespace = "default"
 
         current_cr = make_rayservice_cr(
-            name=service_name, namespace=namespace, state="Running",
+            name=service_name,
+            namespace=namespace,
+            state="Running",
         )
         mock_custom_objects_api.get_namespaced_custom_object.return_value = current_cr
 

@@ -288,7 +288,14 @@ class AsyncServiceHandle:
         from kuberay_sdk.services.service_service import ServiceService
 
         svc = ServiceService(self._client._custom_api, self._client._config)
-        await _run_sync(svc.update, self._name, self._namespace, num_replicas=num_replicas, import_path=import_path, runtime_env=runtime_env)
+        await _run_sync(
+            svc.update,
+            self._name,
+            self._namespace,
+            num_replicas=num_replicas,
+            import_path=import_path,
+            runtime_env=runtime_env,
+        )
 
     async def delete(self) -> None:
         """Delete the service."""
