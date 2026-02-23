@@ -1,50 +1,169 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+===================
+Version change: N/A → 1.0.0
+Added principles:
+  - I. API-First Design (new)
+  - II. User-Centric Abstraction (new)
+  - III. Progressive Disclosure (new)
+  - IV. Test-First (new)
+  - V. Simplicity & YAGNI (new)
+Added sections:
+  - Tech Stack & Constraints (new)
+  - Development Workflow (new)
+  - Governance (new)
+Removed sections: none
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no changes needed
+    (Constitution Check section is generic; will reference these
+    principles at plan-generation time)
+  - .specify/templates/spec-template.md ✅ no changes needed
+    (spec template is domain-agnostic)
+  - .specify/templates/tasks-template.md ✅ no changes needed
+    (task categorization is generic)
+Follow-up TODOs: none
+-->
+
+# KubeRay Python SDK Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. API-First Design
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All features MUST begin as explicit API contracts — type
+definitions, function signatures, and interface protocols —
+before any implementation work starts.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Public surface area MUST be defined in type stubs or
+  abstract base classes and reviewed before coding begins.
+- Every public function and class MUST include docstrings
+  with usage examples.
+- Breaking changes to the public API MUST follow semantic
+  versioning and MUST be documented in a changelog.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: An SDK lives or dies by its API. Defining
+contracts first prevents accidental complexity leaking into
+the user-facing surface and enables parallel work on
+implementation and documentation.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. User-Centric Abstraction
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+The SDK MUST hide Kubernetes complexity from its primary
+users — data scientists, AI/ML practitioners, and AI
+engineers. Users MUST be able to create Ray clusters,
+create Ray jobs, and submit Ray jobs to existing clusters
+without understanding Kubernetes concepts.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Default workflows MUST NOT require users to write or
+  read Kubernetes manifests, know about Pods, Services,
+  or CRDs.
+- Namespace awareness MUST be handled transparently via
+  configuration or context, not by requiring users to
+  pass namespace parameters everywhere.
+- Authentication MUST use kube-authkit and MUST be
+  configured once, not per-call.
+- Error messages MUST be expressed in Ray/ML domain terms
+  (e.g., "cluster failed to start") not Kubernetes terms
+  (e.g., "Pod CrashLoopBackOff").
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: The target audience cares about running Ray
+workloads, not operating Kubernetes. Leaking infrastructure
+details into the SDK defeats its purpose.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Progressive Disclosure
+
+Advanced Kubernetes capabilities — Kueue integration,
+scheduling constraints via labels and annotations, resource
+quotas, tolerations, node affinity — MUST be accessible
+but MUST NOT be required for basic usage.
+
+- The SDK MUST provide a layered API: simple defaults for
+  common cases, optional parameters for advanced tuning.
+- Advanced options MUST use keyword arguments or builder
+  patterns, never positional arguments.
+- Documentation MUST clearly separate "Getting Started"
+  (no K8s knowledge) from "Advanced Configuration"
+  (K8s-aware users).
+
+**Rationale**: Some users are platform engineers who need
+fine-grained control. Blocking them forces workarounds.
+Exposing everything by default overwhelms data scientists.
+Progressive disclosure satisfies both audiences.
+
+### IV. Test-First (NON-NEGOTIABLE)
+
+All features MUST follow Test-Driven Development: tests
+are written first, confirmed to fail, then implementation
+makes them pass.
+
+- Red-Green-Refactor cycle MUST be strictly followed.
+- Unit tests MUST cover all public API methods.
+- Integration tests MUST validate end-to-end workflows
+  against a KubeRay-enabled cluster (real or mocked).
+- Contract tests MUST verify that SDK-generated Kubernetes
+  resources match expected KubeRay CRD schemas.
+
+**Rationale**: An SDK is a contract with its users. TDD
+ensures the contract is defined before implementation and
+prevents regressions that break downstream applications.
+
+### V. Simplicity & YAGNI
+
+Every feature, abstraction, and configuration option MUST
+justify its existence with a concrete current use case.
+
+- MUST NOT add features "for future use" or "just in case."
+- Prefer fewer, composable primitives over many specialized
+  helpers.
+- Three similar lines of code are better than a premature
+  abstraction.
+- Configuration MUST use sensible defaults; users MUST be
+  able to create a basic Ray cluster with minimal parameters.
+
+**Rationale**: SDKs accumulate complexity over time. Strict
+YAGNI discipline keeps the surface area small, learning
+curve short, and maintenance burden manageable.
+
+## Tech Stack & Constraints
+
+- **Language**: Python 3.9+
+- **Kubernetes Client**: official `kubernetes` Python client
+- **Authentication**: kube-authkit
+- **Target Platform**: Any environment with kubeconfig access
+  to a Kubernetes cluster running the KubeRay operator
+- **Packaging**: distributed as a pip-installable package
+- **Dependencies**: MUST be kept minimal; every new
+  dependency MUST be justified
+- **Compatibility**: MUST support the two most recent
+  KubeRay operator minor versions
+
+## Development Workflow
+
+- All code changes MUST be submitted via pull requests.
+- Pull requests MUST include tests that pass before merge.
+- Pull requests MUST pass linting (ruff) and type checking
+  (mypy or pyright) in CI.
+- Public API changes MUST include updated docstrings and
+  usage examples.
+- Commit messages MUST follow Conventional Commits format.
+- Releases MUST follow semantic versioning (MAJOR.MINOR.PATCH).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the authoritative source of project
+principles and development standards. It supersedes all
+other guidance when conflicts arise.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments**: Any change to this constitution MUST be
+  proposed via pull request, reviewed by at least one
+  maintainer, and include a migration plan if existing code
+  is affected.
+- **Versioning**: Constitution versions follow semantic
+  versioning — MAJOR for principle removals or redefinitions,
+  MINOR for new principles or material expansions, PATCH
+  for clarifications and typo fixes.
+- **Compliance**: All pull requests and code reviews MUST
+  verify adherence to these principles. Deviations MUST be
+  explicitly justified and documented.
+
+**Version**: 1.0.0 | **Ratified**: 2026-02-23 | **Last Amended**: 2026-02-23
