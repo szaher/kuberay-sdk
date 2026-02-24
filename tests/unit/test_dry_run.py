@@ -92,9 +92,7 @@ class TestDryRunResult:
 class TestDryRunIntegration:
     """Test dry_run=True with client create methods."""
 
-    def test_create_cluster_dry_run_returns_dry_run_result(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_create_cluster_dry_run_returns_dry_run_result(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
             from kuberay_sdk.models.common import DryRunResult
@@ -105,9 +103,7 @@ class TestDryRunIntegration:
             assert result.kind == "RayCluster"
             assert result.manifest["metadata"]["name"] == "test-cluster"
 
-    def test_create_cluster_dry_run_no_api_call(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_create_cluster_dry_run_no_api_call(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
@@ -116,9 +112,7 @@ class TestDryRunIntegration:
             # The mock_k8s_client is the CustomObjectsApi mock
             mock_k8s_client.create_namespaced_custom_object.assert_not_called()
 
-    def test_create_cluster_dry_run_invalid_name_raises(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_create_cluster_dry_run_invalid_name_raises(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
@@ -132,9 +126,7 @@ class TestDryRunIntegration:
             from kuberay_sdk.models.common import DryRunResult
 
             client = KubeRayClient()
-            result = client.create_job(
-                "test-job", entrypoint="python train.py", dry_run=True
-            )
+            result = client.create_job("test-job", entrypoint="python train.py", dry_run=True)
             assert isinstance(result, DryRunResult)
             assert result.kind == "RayJob"
             assert result.manifest["spec"]["entrypoint"] == "python train.py"
@@ -155,16 +147,12 @@ class TestDryRunIntegration:
             assert result.kind == "RayService"
             mock_k8s_client.create_namespaced_custom_object.assert_not_called()
 
-    def test_create_cluster_dry_run_manifest_has_required_keys(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_create_cluster_dry_run_manifest_has_required_keys(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
             client = KubeRayClient()
-            result = client.create_cluster(
-                "test-cluster", workers=4, gpus_per_worker=1, dry_run=True
-            )
+            result = client.create_cluster("test-cluster", workers=4, gpus_per_worker=1, dry_run=True)
             manifest = result.to_dict()
             assert manifest["apiVersion"] == "ray.io/v1"
             assert manifest["kind"] == "RayCluster"

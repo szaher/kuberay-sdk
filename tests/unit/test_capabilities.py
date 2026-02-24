@@ -255,9 +255,7 @@ class TestDetectCapabilities:
             patch("kuberay_sdk.capabilities.ApiextensionsV1Api") as mock_ext_cls,
             patch("kuberay_sdk.capabilities.CoreV1Api") as mock_core_cls,
         ):
-            mock_ext_cls.return_value.list_custom_resource_definition.side_effect = (
-                _make_api_exception(403)
-            )
+            mock_ext_cls.return_value.list_custom_resource_definition.side_effect = _make_api_exception(403)
             mock_core_cls.return_value.list_node.return_value = MagicMock(items=[])
 
             caps = detect_capabilities(api_client)

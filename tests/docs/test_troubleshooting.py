@@ -23,10 +23,6 @@ class TestTroubleshootingDoc:
 
     def test_has_at_least_five_sections(self) -> None:
         content = (DOCS_DIR / "troubleshooting.md").read_text()
-        headings = [
-            line
-            for line in content.split("\n")
-            if line.startswith("## ") or line.startswith("### ")
-        ]
+        headings = [line for line in content.split("\n") if line.startswith("## ") or line.startswith("### ")]
         # At least title + 5 issue sections
         assert len(headings) >= 5

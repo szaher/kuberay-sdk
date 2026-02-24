@@ -12,9 +12,7 @@ from kuberay_sdk.models.progress import ProgressStatus
 class TestClusterWaitProgress:
     @patch("kuberay_sdk.services.cluster_service.time.sleep")
     @patch("kuberay_sdk.services.cluster_service.time.monotonic")
-    def test_callback_invoked_during_wait(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_callback_invoked_during_wait(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Progress callback should be called each poll cycle."""
         from kuberay_sdk.services.cluster_service import ClusterService
 
@@ -34,13 +32,9 @@ class TestClusterWaitProgress:
         status_ready.state = "RUNNING"
         status_ready.head_ready = True
 
-        with patch.object(
-            svc, "get_status", side_effect=[status_creating, status_ready]
-        ):
+        with patch.object(svc, "get_status", side_effect=[status_creating, status_ready]):
             callback = MagicMock()
-            svc.wait_until_ready(
-                "test", "default", timeout=300, progress_callback=callback
-            )
+            svc.wait_until_ready("test", "default", timeout=300, progress_callback=callback)
             assert callback.call_count >= 1
             # Check callback was called with ProgressStatus
             first_call_arg = callback.call_args_list[0][0][0]
@@ -48,9 +42,7 @@ class TestClusterWaitProgress:
 
     @patch("kuberay_sdk.services.cluster_service.time.sleep")
     @patch("kuberay_sdk.services.cluster_service.time.monotonic")
-    def test_callback_receives_correct_state(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_callback_receives_correct_state(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Progress callback should receive the current cluster state."""
         from kuberay_sdk.services.cluster_service import ClusterService
 
@@ -68,13 +60,9 @@ class TestClusterWaitProgress:
         status_ready.state = "RUNNING"
         status_ready.head_ready = True
 
-        with patch.object(
-            svc, "get_status", side_effect=[status_creating, status_ready]
-        ):
+        with patch.object(svc, "get_status", side_effect=[status_creating, status_ready]):
             callback = MagicMock()
-            svc.wait_until_ready(
-                "test", "default", timeout=300, progress_callback=callback
-            )
+            svc.wait_until_ready("test", "default", timeout=300, progress_callback=callback)
 
             # First call should have CREATING state
             first_progress = callback.call_args_list[0][0][0]
@@ -86,9 +74,7 @@ class TestClusterWaitProgress:
 
     @patch("kuberay_sdk.services.cluster_service.time.sleep")
     @patch("kuberay_sdk.services.cluster_service.time.monotonic")
-    def test_no_callback_silent(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_no_callback_silent(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Without callback, wait works as before."""
         from kuberay_sdk.services.cluster_service import ClusterService
 
@@ -107,9 +93,7 @@ class TestClusterWaitProgress:
 
     @patch("kuberay_sdk.services.cluster_service.time.sleep")
     @patch("kuberay_sdk.services.cluster_service.time.monotonic")
-    def test_callback_exception_caught(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_callback_exception_caught(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Callback exception should be caught and not propagate."""
         from kuberay_sdk.services.cluster_service import ClusterService
 
@@ -129,21 +113,15 @@ class TestClusterWaitProgress:
         def bad_callback(status: ProgressStatus) -> None:
             raise RuntimeError("callback error")
 
-        with patch.object(
-            svc, "get_status", side_effect=[status_creating, status_ready]
-        ):
+        with patch.object(svc, "get_status", side_effect=[status_creating, status_ready]):
             # Should NOT raise even though callback throws
-            svc.wait_until_ready(
-                "test", "default", timeout=300, progress_callback=bad_callback
-            )
+            svc.wait_until_ready("test", "default", timeout=300, progress_callback=bad_callback)
 
 
 class TestJobWaitProgress:
     @patch("kuberay_sdk.services.job_service.time.sleep")
     @patch("kuberay_sdk.services.job_service.time.monotonic")
-    def test_callback_invoked_during_job_wait(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_callback_invoked_during_job_wait(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Progress callback should be called each poll cycle for job wait."""
         from kuberay_sdk.services.job_service import JobService
 
@@ -161,9 +139,7 @@ class TestJobWaitProgress:
         status_done.state = MagicMock()
         status_done.state.value = "SUCCEEDED"
 
-        with patch.object(
-            svc, "get_status", side_effect=[status_running, status_done]
-        ):
+        with patch.object(svc, "get_status", side_effect=[status_running, status_done]):
             callback = MagicMock()
             svc.wait("test-job", "default", timeout=3600, progress_callback=callback)
             assert callback.call_count >= 1
@@ -172,9 +148,7 @@ class TestJobWaitProgress:
 
     @patch("kuberay_sdk.services.job_service.time.sleep")
     @patch("kuberay_sdk.services.job_service.time.monotonic")
-    def test_job_wait_no_callback_silent(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_job_wait_no_callback_silent(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Without callback, job wait works as before."""
         from kuberay_sdk.services.job_service import JobService
 
@@ -192,9 +166,7 @@ class TestJobWaitProgress:
 
     @patch("kuberay_sdk.services.job_service.time.sleep")
     @patch("kuberay_sdk.services.job_service.time.monotonic")
-    def test_job_callback_exception_caught(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_job_callback_exception_caught(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Callback exception should be caught and not propagate in job wait."""
         from kuberay_sdk.services.job_service import JobService
 
@@ -214,9 +186,7 @@ class TestJobWaitProgress:
         def bad_callback(status: ProgressStatus) -> None:
             raise RuntimeError("callback error")
 
-        with patch.object(
-            svc, "get_status", side_effect=[status_running, status_done]
-        ):
+        with patch.object(svc, "get_status", side_effect=[status_running, status_done]):
             svc.wait(
                 "test-job",
                 "default",
@@ -228,9 +198,7 @@ class TestJobWaitProgress:
 class TestDashboardJobWaitProgress:
     @patch("kuberay_sdk.services.job_service.time.sleep")
     @patch("kuberay_sdk.services.job_service.time.monotonic")
-    def test_callback_invoked_during_dashboard_wait(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_callback_invoked_during_dashboard_wait(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Progress callback should be called for dashboard job wait."""
         from kuberay_sdk.services.job_service import JobService
 
@@ -259,9 +227,7 @@ class TestDashboardJobWaitProgress:
 
     @patch("kuberay_sdk.services.job_service.time.sleep")
     @patch("kuberay_sdk.services.job_service.time.monotonic")
-    def test_dashboard_callback_exception_caught(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_dashboard_callback_exception_caught(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """Callback exception should be caught in dashboard job wait."""
         from kuberay_sdk.services.job_service import JobService
 
@@ -314,9 +280,7 @@ class TestTimeoutErrorLastStatus:
 
     @patch("kuberay_sdk.services.cluster_service.time.sleep")
     @patch("kuberay_sdk.services.cluster_service.time.monotonic")
-    def test_timeout_error_includes_last_status_on_timeout(
-        self, mock_mono: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_timeout_error_includes_last_status_on_timeout(self, mock_mono: MagicMock, mock_sleep: MagicMock) -> None:
         """When a wait times out, the TimeoutError should include last_status."""
         from kuberay_sdk.errors import TimeoutError
         from kuberay_sdk.services.cluster_service import ClusterService
@@ -350,9 +314,7 @@ class TestHandleProgressCallback:
         handle = ClusterHandle("test", "default", mock_client)
 
         callback = MagicMock()
-        with patch(
-            "kuberay_sdk.services.cluster_service.ClusterService.wait_until_ready"
-        ) as mock_wait:
+        with patch("kuberay_sdk.services.cluster_service.ClusterService.wait_until_ready") as mock_wait:
             handle.wait_until_ready(timeout=300, progress_callback=callback)
             mock_wait.assert_called_once()
             call_kwargs = mock_wait.call_args
@@ -367,9 +329,7 @@ class TestHandleProgressCallback:
         handle = JobHandle("test-job", "default", mock_client, mode="CRD")
 
         callback = MagicMock()
-        with patch(
-            "kuberay_sdk.services.job_service.JobService.wait"
-        ) as mock_wait:
+        with patch("kuberay_sdk.services.job_service.JobService.wait") as mock_wait:
             handle.wait(timeout=3600, progress_callback=callback)
             mock_wait.assert_called_once()
             call_kwargs = mock_wait.call_args
@@ -390,9 +350,7 @@ class TestHandleProgressCallback:
         )
 
         callback = MagicMock()
-        with patch(
-            "kuberay_sdk.services.job_service.JobService.wait_dashboard_job"
-        ) as mock_wait:
+        with patch("kuberay_sdk.services.job_service.JobService.wait_dashboard_job") as mock_wait:
             handle.wait(timeout=3600, progress_callback=callback)
             mock_wait.assert_called_once()
             call_kwargs = mock_wait.call_args

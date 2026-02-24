@@ -9,9 +9,7 @@ class TestProgressStatus:
     def test_creation(self) -> None:
         from kuberay_sdk.models.progress import ProgressStatus
 
-        status = ProgressStatus(
-            state="creating", elapsed_seconds=5.0, message="Waiting for head pod"
-        )
+        status = ProgressStatus(state="creating", elapsed_seconds=5.0, message="Waiting for head pod")
         assert status.state == "creating"
         assert status.elapsed_seconds == 5.0
         assert status.message == "Waiting for head pod"
@@ -32,9 +30,7 @@ class TestProgressStatus:
     def test_metadata_preserved(self) -> None:
         from kuberay_sdk.models.progress import ProgressStatus
 
-        status = ProgressStatus(
-            state="ready", elapsed_seconds=10.0, metadata={"workers": 4}
-        )
+        status = ProgressStatus(state="ready", elapsed_seconds=10.0, metadata={"workers": 4})
         assert status.metadata == {"workers": 4}
 
     def test_reexported_from_models_package(self) -> None:

@@ -282,9 +282,7 @@ class TestRemediationAttribute:
             TimeoutError("op", 30.0),
         ]
         for err in errors:
-            assert err.remediation != "", (
-                f"{type(err).__name__} must have a non-empty remediation"
-            )
+            assert err.remediation != "", f"{type(err).__name__} must have a non-empty remediation"
 
 
 class TestTranslateK8sErrorRemediation:
@@ -298,31 +296,23 @@ class TestTranslateK8sErrorRemediation:
 
     def test_404_cluster_has_remediation(self) -> None:
         exc = self._make_api_exc(404, "Not Found")
-        result = translate_k8s_error(
-            exc, resource_kind="RayCluster", resource_name="c1", namespace="ns"
-        )
+        result = translate_k8s_error(exc, resource_kind="RayCluster", resource_name="c1", namespace="ns")
         assert result.remediation != ""
         assert "kubectl" in result.remediation.lower()
 
     def test_404_job_has_remediation(self) -> None:
         exc = self._make_api_exc(404, "Not Found")
-        result = translate_k8s_error(
-            exc, resource_kind="RayJob", resource_name="j1", namespace="ns"
-        )
+        result = translate_k8s_error(exc, resource_kind="RayJob", resource_name="j1", namespace="ns")
         assert result.remediation != ""
 
     def test_404_service_has_remediation(self) -> None:
         exc = self._make_api_exc(404, "Not Found")
-        result = translate_k8s_error(
-            exc, resource_kind="RayService", resource_name="s1", namespace="ns"
-        )
+        result = translate_k8s_error(exc, resource_kind="RayService", resource_name="s1", namespace="ns")
         assert result.remediation != ""
 
     def test_404_unknown_has_remediation(self) -> None:
         exc = self._make_api_exc(404, "Not Found")
-        result = translate_k8s_error(
-            exc, resource_kind="Unknown", resource_name="x", namespace="ns"
-        )
+        result = translate_k8s_error(exc, resource_kind="Unknown", resource_name="x", namespace="ns")
         assert result.remediation != ""
 
     def test_401_has_remediation(self) -> None:
@@ -338,9 +328,7 @@ class TestTranslateK8sErrorRemediation:
 
     def test_409_has_remediation(self) -> None:
         exc = self._make_api_exc(409, "Conflict")
-        result = translate_k8s_error(
-            exc, resource_kind="RayCluster", resource_name="c1", namespace="ns"
-        )
+        result = translate_k8s_error(exc, resource_kind="RayCluster", resource_name="c1", namespace="ns")
         assert result.remediation != ""
 
     def test_422_has_remediation(self) -> None:

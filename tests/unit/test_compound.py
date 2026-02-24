@@ -65,18 +65,14 @@ class TestCreateClusterAndSubmitJob:
 
             assert call_order == ["create_cluster", "wait_until_ready", "submit_job"]
 
-    def test_timeout_raises_but_does_not_delete_cluster(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_timeout_raises_but_does_not_delete_cluster(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
             client = KubeRayClient()
 
             mock_cluster = MagicMock()
-            mock_cluster.wait_until_ready.side_effect = TimeoutError(
-                "Cluster not ready"
-            )
+            mock_cluster.wait_until_ready.side_effect = TimeoutError("Cluster not ready")
 
             with patch.object(client, "create_cluster", return_value=mock_cluster):
                 with pytest.raises(TimeoutError) as exc_info:
@@ -92,9 +88,7 @@ class TestCreateClusterAndSubmitJob:
                 assert hasattr(exc_info.value, "cluster")
                 assert exc_info.value.cluster is mock_cluster
 
-    def test_error_includes_cluster_handle(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_error_includes_cluster_handle(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
@@ -112,9 +106,7 @@ class TestCreateClusterAndSubmitJob:
 
                 assert exc_info.value.cluster is mock_cluster
 
-    def test_passes_preset_to_create_cluster(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_passes_preset_to_create_cluster(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 
@@ -134,9 +126,7 @@ class TestCreateClusterAndSubmitJob:
                 _, kwargs = mock_create.call_args
                 assert kwargs["preset"] == "dev"
 
-    def test_passes_runtime_env_to_submit_job(
-        self, mock_k8s_client: MagicMock
-    ) -> None:
+    def test_passes_runtime_env_to_submit_job(self, mock_k8s_client: MagicMock) -> None:
         with patch("kuberay_sdk.client.check_kuberay_crds"):
             from kuberay_sdk.client import KubeRayClient
 

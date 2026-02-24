@@ -401,7 +401,7 @@ class TestJitter:
         delays = [c.args[0] for c in mock_sleep.call_args_list]
         assert len(delays) == 4  # sleeps after attempts 1-4
         for i, delay in enumerate(delays):
-            max_delay = 1.0 * (2 ** i)  # backoff_factor * 2^(attempt-1)
+            max_delay = 1.0 * (2**i)  # backoff_factor * 2^(attempt-1)
             assert delay <= max_delay, f"Delay {delay} exceeds max {max_delay} on attempt {i + 1}"
 
     @patch("kuberay_sdk.retry.time.sleep")

@@ -78,9 +78,7 @@ class TestPresetIntegration:
             from kuberay_sdk.client import KubeRayClient
 
             client = KubeRayClient()
-            result = client.create_cluster(
-                "test", preset="dev", workers=8, dry_run=True
-            )
+            result = client.create_cluster("test", preset="dev", workers=8, dry_run=True)
             manifest = result.to_dict()
             worker_specs = manifest["spec"]["workerGroupSpecs"]
             assert worker_specs[0]["replicas"] == 8
@@ -120,9 +118,7 @@ class TestPresetIntegration:
             result = client.create_cluster("test", preset="gpu-single", dry_run=True)
             manifest = result.to_dict()
             worker_specs = manifest["spec"]["workerGroupSpecs"]
-            worker_resources = worker_specs[0]["template"]["spec"]["containers"][0][
-                "resources"
-            ]
+            worker_resources = worker_specs[0]["template"]["spec"]["containers"][0]["resources"]
             assert "nvidia.com/gpu" in worker_resources["requests"]
             assert worker_resources["requests"]["nvidia.com/gpu"] == "1"
 
@@ -133,9 +129,7 @@ class TestPresetIntegration:
             client = KubeRayClient()
             result = client.create_cluster("test", preset="gpu-single", dry_run=True)
             manifest = result.to_dict()
-            head_resources = manifest["spec"]["headGroupSpec"]["template"]["spec"][
-                "containers"
-            ][0]["resources"]
+            head_resources = manifest["spec"]["headGroupSpec"]["template"]["spec"]["containers"][0]["resources"]
             # gpu-single preset has head_cpu="2", head_memory="4Gi"
             assert head_resources["requests"]["cpu"] == "2"
             assert head_resources["requests"]["memory"] == "4Gi"
