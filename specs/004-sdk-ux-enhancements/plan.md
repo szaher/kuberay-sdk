@@ -60,11 +60,20 @@ docs/user-guide/cli-reference.md             # CLI command reference page
 examples/dry_run_preview.py                  # Standalone dry-run example
 examples/presets_usage.py                    # Preset configuration example
 examples/progress_callbacks.py               # Progress callback example
-examples/cli_usage.sh                        # CLI tool usage example (shell script)
+examples/cli_usage.py                        # CLI tool usage example (Python script)
 examples/capability_discovery.py             # Capability discovery example
 examples/compound_operations.py              # Compound operation example
 examples/config_and_env_vars.py              # Config file and env var example
 examples/convenience_imports.py              # Top-level import example
+
+docs/examples/convenience-imports.md          # Example wrapper page (pymdownx snippet embed)
+docs/examples/config-env-vars.md             # Example wrapper page
+docs/examples/dry-run-preview.md             # Example wrapper page
+docs/examples/presets-usage.md               # Example wrapper page
+docs/examples/progress-callbacks.md          # Example wrapper page
+docs/examples/compound-operations.md         # Example wrapper page
+docs/examples/capability-discovery.md        # Example wrapper page
+docs/examples/cli-usage.md                   # Example wrapper page
 
 # Files to MODIFY
 README.md                                    # Add 8 new feature sections
@@ -151,7 +160,7 @@ Create 8 standalone example scripts in `examples/`:
 | `progress_callbacks.py` | Progress callbacks | Define callback, annotate cluster-required wait step |
 | `compound_operations.py` | Compound operations | Annotate cluster-required step with comments |
 | `capability_discovery.py` | Capability discovery | Annotate cluster-required step with comments |
-| `cli_usage.sh` | CLI tool | Shell script with commands and `# Requires: live cluster` annotations |
+| `cli_usage.py` | CLI tool | Python script using subprocess to show CLI commands; annotated with `# Requires: live cluster` |
 
 Each script:
 - Has a module-level docstring explaining the feature

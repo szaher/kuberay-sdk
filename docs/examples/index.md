@@ -13,6 +13,19 @@ Runnable examples demonstrating common kuberay-sdk workflows. Each example inclu
 | [Ray Serve Deployment](ray-serve-deployment.md) | Deploy, update, and manage Ray Serve apps |
 | [OpenShift Features](openshift-features.md) | Hardware profiles, Kueue queues, platform detection |
 
+### New in v0.2.0
+
+| Example | Description |
+|---|---|
+| [Convenience Imports](convenience-imports.md) | Import common types from the top-level package |
+| [Config & Env Vars](config-env-vars.md) | Config file and environment variable precedence |
+| [Dry-Run Preview](dry-run-preview.md) | Preview CRD manifests without creating resources |
+| [Presets](presets-usage.md) | Built-in cluster configuration presets |
+| [Progress Callbacks](progress-callbacks.md) | Monitor long-running wait operations |
+| [Compound Operations](compound-operations.md) | Create cluster and submit job in one call |
+| [Capability Discovery](capability-discovery.md) | Detect cluster features before operations |
+| [CLI Usage](cli-usage.md) | Manage Ray resources from the terminal |
+
 ## Jupyter Notebooks
 
 | Notebook | Description |

@@ -211,7 +211,7 @@ US14 introduces no new code entities. The "data model" for this phase is the doc
 | Example: progress callbacks | `examples/progress_callbacks.py` | New | Callback definition; cluster step annotated |
 | Example: compound ops | `examples/compound_operations.py` | New | Method usage; cluster step annotated |
 | Example: capability discovery | `examples/capability_discovery.py` | New | Discovery usage; cluster step annotated |
-| Example: CLI | `examples/cli_usage.sh` | New | Shell script with CLI commands; annotated |
+| Example: CLI | `examples/cli_usage.py` | New | Python script demonstrating CLI commands via subprocess; annotated |
 | MkDocs nav | `mkdocs.yml` | Modified | Add nav entries for new pages and examples |
 | Examples index | `docs/examples/index.md` | Modified | Add links to new example scripts |
 

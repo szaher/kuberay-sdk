@@ -319,41 +319,42 @@
 
 **Purpose**: Create 8 standalone example scripts demonstrating each new feature. All scripts must be runnable without a live cluster where possible; cluster-dependent steps annotated with comments.
 
-- [ ] T063 [P] [US14] Create standalone example script for convenience re-exports in examples/convenience_imports.py: import WorkerGroup, RuntimeEnv, StorageVolume, SDKConfig, KubeRayClient from top-level package, print types to verify, include before/after comparison in comments
-- [ ] T064 [P] [US14] Create standalone example script for config file and env vars in examples/config_and_env_vars.py: write temp ~/.kuberay/config.yaml, set KUBERAY_NAMESPACE env var, show precedence (explicit > env > file > defaults), include credential warning comment, clean up temp file
-- [ ] T065 [P] [US14] Create standalone example script for dry-run mode in examples/dry_run_preview.py: call create_cluster(dry_run=True), print result.to_dict() and result.to_yaml(), show validation error on invalid params — fully standalone, no cluster needed
-- [ ] T066 [P] [US14] Create standalone example script for presets in examples/presets_usage.py: call list_presets() and print each preset, create cluster with preset="dev" using dry_run=True, show explicit param override of preset defaults
-- [ ] T067 [P] [US14] Create example script for progress callbacks in examples/progress_callbacks.py: define a progress callback function that prints ProgressStatus fields, show wait_until_ready(progress_callback=on_progress) usage with `# NOTE: Requires a running KubeRay cluster` annotation
-- [ ] T068 [P] [US14] Create example script for compound operations in examples/compound_operations.py: show create_cluster_and_submit_job() method signature and usage with `# NOTE: Requires a running KubeRay cluster` annotation, include error handling showing partial failure behavior
-- [ ] T069 [P] [US14] Create example script for capability discovery in examples/capability_discovery.py: show client.get_capabilities() usage with conditional logic (GPU/Kueue detection), annotate cluster-required step with `# NOTE: Requires a running KubeRay cluster`
-- [ ] T070 [P] [US14] Create CLI usage example shell script in examples/cli_usage.sh: demonstrate kuberay cluster list, kuberay cluster create, kuberay job create, kuberay capabilities, kuberay --help, kuberay cluster list --output json — annotate cluster-dependent commands with `# Requires: live KubeRay cluster`
+- [x] T063 [P] [US14] Create standalone example script for convenience re-exports in examples/convenience_imports.py: import WorkerGroup, RuntimeEnv, StorageVolume, SDKConfig, KubeRayClient from top-level package, print types to verify, include before/after comparison in comments
+- [x] T064 [P] [US14] Create standalone example script for config file and env vars in examples/config_and_env_vars.py: write temp ~/.kuberay/config.yaml, set KUBERAY_NAMESPACE env var, show precedence (explicit > env > file > defaults), include credential warning comment, clean up temp file
+- [x] T065 [P] [US14] Create standalone example script for dry-run mode in examples/dry_run_preview.py: call create_cluster(dry_run=True), print result.to_dict() and result.to_yaml(), show validation error on invalid params — fully standalone, no cluster needed
+- [x] T066 [P] [US14] Create standalone example script for presets in examples/presets_usage.py: call list_presets() and print each preset, create cluster with preset="dev" using dry_run=True, show explicit param override of preset defaults
+- [x] T067 [P] [US14] Create example script for progress callbacks in examples/progress_callbacks.py: define a progress callback function that prints ProgressStatus fields, show wait_until_ready(progress_callback=on_progress) usage with `# NOTE: Requires a running KubeRay cluster` annotation
+- [x] T068 [P] [US14] Create example script for compound operations in examples/compound_operations.py: show create_cluster_and_submit_job() method signature and usage with `# NOTE: Requires a running KubeRay cluster` annotation, include error handling showing partial failure behavior
+- [x] T069 [P] [US14] Create example script for capability discovery in examples/capability_discovery.py: show client.get_capabilities() usage with conditional logic (GPU/Kueue detection), annotate cluster-required step with `# NOTE: Requires a running KubeRay cluster`
+- [x] T070 [P] [US14] Create CLI usage example Python script in examples/cli_usage.py: use subprocess.run() to demonstrate kuberay cluster list, kuberay cluster create, kuberay job create, kuberay capabilities, kuberay --help, kuberay cluster list --output json — show commands as strings with inline comments, annotate cluster-dependent commands with `# NOTE: Requires a running KubeRay cluster`
+- [x] T081 [P] [US14] Create 8 docs/examples/*.md wrapper pages following existing pattern (see docs/examples/cluster-basics.md): each page has a title, description, download link, and source code embedded via pymdownx snippets (`--8<-- "examples/filename.py"`). Files to create: docs/examples/convenience-imports.md, docs/examples/config-env-vars.md, docs/examples/dry-run-preview.md, docs/examples/presets-usage.md, docs/examples/progress-callbacks.md, docs/examples/compound-operations.md, docs/examples/capability-discovery.md, docs/examples/cli-usage.md
 
 ### Phase 17b: README Updates (FR-034, FR-036)
 
 **Purpose**: Add 8 new feature sections to README.md with quick-start code snippets, version annotations, and config precedence diagram with credential warning.
 
-- [ ] T071 [US14] Add 8 new feature sections to README.md after the existing "Async Client" section. Each section has a heading, `*Added in v0.2.0*` version annotation, 1-2 sentence description, and runnable code snippet. Sections in order: (1) Convenience Imports, (2) Configuration File & Environment Variables (with precedence order and credential warning per FR-036), (3) Dry-Run Mode, (4) Presets, (5) Progress Callbacks, (6) Compound Operations, (7) Capability Discovery, (8) CLI Tool (with link to docs site CLI reference page)
+- [x] T071 [US14] Add 8 new feature sections to README.md after the existing "Async Client" section. Each section has a heading, `*Added in v0.2.0*` version annotation, 1-2 sentence description, and runnable code snippet. Sections in order: (1) Convenience Imports, (2) Configuration File & Environment Variables (with precedence order and credential warning per FR-036), (3) Dry-Run Mode, (4) Presets, (5) Progress Callbacks, (6) Compound Operations, (7) Capability Discovery, (8) CLI Tool (with link to docs site CLI reference page)
 
 ### Phase 17c: Docs Site Pages (FR-034, FR-037)
 
 **Purpose**: Create new user guide page and CLI reference page on the MkDocs docs site.
 
-- [ ] T072 [P] [US14] Create comprehensive user guide page at docs/user-guide/new-features.md covering all 8 new features with detailed usage examples, configuration options, edge cases, and cross-links to existing docs (configuration.md, error-handling.md). Each feature section has `*Added in v0.2.0*` version annotation. Include config precedence diagram with credential warning per FR-036
-- [ ] T073 [P] [US14] Create CLI command reference page at docs/user-guide/cli-reference.md per FR-037 and contracts/documentation.md: overview command tree, global options (--namespace, --output, --config), per-subcommand sections for cluster/job/service with synopsis, options table, and example output (table + JSON), kuberay capabilities command
+- [x] T072 [P] [US14] Create comprehensive user guide page at docs/user-guide/new-features.md covering all 8 new features with detailed usage examples, configuration options, edge cases, and cross-links to existing docs (configuration.md, error-handling.md). Each feature section has `*Added in v0.2.0*` version annotation. Include config precedence diagram with credential warning per FR-036
+- [x] T073 [P] [US14] Create CLI command reference page at docs/user-guide/cli-reference.md per FR-037 and contracts/documentation.md: overview command tree, global options (--namespace, --output, --config), per-subcommand sections for cluster/job/service with synopsis, options table, and example output (table + JSON), kuberay capabilities command
 
 ### Phase 17d: Navigation and Index Updates
 
 **Purpose**: Wire new pages into MkDocs nav and update example index.
 
-- [ ] T074 [US14] Update mkdocs.yml nav to add: `New Features: user-guide/new-features.md` (under User Guide, after Configuration), `CLI Reference: user-guide/cli-reference.md` (under User Guide, after New Features), and new example page entries under Examples section
-- [ ] T075 [P] [US14] Update docs/examples/index.md to add links and descriptions for all 8 new example scripts (convenience_imports.py, config_and_env_vars.py, dry_run_preview.py, presets_usage.py, progress_callbacks.py, compound_operations.py, capability_discovery.py, cli_usage.sh)
+- [x] T074 [US14] Update mkdocs.yml nav to add: `New Features: user-guide/new-features.md` (under User Guide, after Configuration), `CLI Reference: user-guide/cli-reference.md` (under User Guide, after New Features), and new example page entries under Examples section pointing to docs/examples/*.md wrapper pages created in T081
+- [x] T075 [P] [US14] Update docs/examples/index.md to add links and descriptions for all 8 new example scripts (convenience_imports.py, config_and_env_vars.py, dry_run_preview.py, presets_usage.py, progress_callbacks.py, compound_operations.py, capability_discovery.py, cli_usage.py)
 
 ### Phase 17e: Validation (SC-013, SC-014)
 
 **Purpose**: Verify all documentation deliverables meet success criteria.
 
-- [ ] T076 [US14] Run `ruff check examples/` to validate all example scripts (including 8 new scripts) pass syntax validation (SC-014). Fix any issues found.
-- [ ] T077 [US14] Verify all 8 new features are documented in README.md with at least one runnable code snippet per feature (SC-013). Verify version annotations present on all new sections. Verify config credential warning present. Verify CLI reference link works.
+- [x] T076 [US14] Run `ruff check examples/` to validate all example scripts (including 8 new scripts) pass syntax validation (SC-014). Fix any issues found.
+- [x] T077 [US14] Verify all 8 new features are documented in README.md with at least one runnable code snippet per feature (SC-013). Verify version annotations present on all new sections. Verify config credential warning present. Verify CLI reference link works.
 
 **Checkpoint**: All US14 documentation deliverables complete. 8 features documented in README, user guide page created, CLI reference page created, 8 example scripts pass ruff check.
 
@@ -363,9 +364,9 @@
 
 **Purpose**: Final validation across all US1–US14 deliverables
 
-- [ ] T078 Run full test suite `pytest tests/` to verify existing 692 tests still pass after documentation changes
-- [ ] T079 [P] Run `ruff check src/ tests/ examples/` to verify all Python files pass linting
-- [ ] T080 Verify quickstart.md scenarios in specs/004-sdk-ux-enhancements/quickstart.md match the documented examples in README.md and docs/user-guide/new-features.md
+- [x] T078 Run full test suite `pytest tests/` to verify existing 692 tests still pass after documentation changes
+- [x] T079 [P] Run `ruff check src/ tests/ examples/` to verify all Python files pass linting
+- [x] T080 Verify quickstart.md scenarios in specs/004-sdk-ux-enhancements/quickstart.md match the documented examples in README.md and docs/user-guide/new-features.md
 
 ---
 
@@ -402,8 +403,9 @@
 ### Within US14
 
 - Example scripts (T063–T070) can all run in parallel — different files
+- Docs/examples wrapper pages (T081) depends on T063–T070 (scripts must exist to reference)
 - README update (T071) can run in parallel with docs site pages (T072, T073) — different files
-- Nav updates (T074, T075) depend on T072 and T073 (pages must exist first)
+- Nav updates (T074, T075) depend on T072, T073, and T081 (pages must exist first)
 - Validation (T076, T077) depends on all prior US14 tasks
 
 ### Within Each User Story (US1–US13)
@@ -434,7 +436,8 @@ Task T066: "Create examples/presets_usage.py"
 Task T067: "Create examples/progress_callbacks.py"
 Task T068: "Create examples/compound_operations.py"
 Task T069: "Create examples/capability_discovery.py"
-Task T070: "Create examples/cli_usage.sh"
+Task T070: "Create examples/cli_usage.py"
+Task T081: "Create 8 docs/examples/*.md wrapper pages"
 ```
 
 ## Parallel Example: US14 Documentation Pages
@@ -456,10 +459,10 @@ All 62 implementation tasks (T001–T062) are complete with 692 tests passing, r
 
 ### US14 Delivery (Current Focus)
 
-1. **Phase 17a**: Create 8 example scripts in parallel (T063–T070) — all different files, max parallelism
+1. **Phase 17a**: Create 8 example scripts in parallel (T063–T070) + docs/examples wrapper pages (T081) — all different files, max parallelism
 2. **Phase 17b**: Update README with 8 new sections (T071) — can run in parallel with Phase 17c
 3. **Phase 17c**: Create user guide page (T072) + CLI reference page (T073) in parallel
-4. **Phase 17d**: Wire nav entries (T074, T075) — depends on 17c completion
+4. **Phase 17d**: Wire nav entries (T074, T075) — depends on 17a, 17c completion
 5. **Phase 17e**: Validate SC-013 and SC-014 (T076, T077)
 6. **Phase 18**: Final polish and cross-validation (T078–T080)
 
@@ -488,4 +491,4 @@ With multiple developers:
 - US14 version annotation format: `*Added in v0.2.0*` per research.md R13
 - US14 CLI reference lives on docs site (not README) per clarification session
 - US14 config docs must include credential warning per clarification session
-- Total tasks: 80 (T001–T062 complete, T063–T080 pending for US14)
+- Total tasks: 81 (T001–T062 complete, T063–T081 + T076–T080 pending for US14)

@@ -186,7 +186,7 @@ nav:
       - Dry-Run Preview: examples/dry-run-preview.md      # NEW (or link to script)
       - Presets: examples/presets-usage.md                 # NEW
       - Progress Callbacks: examples/progress-callbacks.md # NEW
-      - CLI Usage: examples/cli-usage.md                   # NEW
+      - CLI Usage: examples/cli-usage.md                    # NEW
       - Capability Discovery: examples/capability-discovery.md  # NEW
       - Compound Operations: examples/compound-operations.md    # NEW
       - Config & Env Vars: examples/config-env-vars.md          # NEW

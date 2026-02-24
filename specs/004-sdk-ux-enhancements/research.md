@@ -208,7 +208,7 @@ delay = random.uniform(0, min(delay, delay * 2))  # Full jitter, bounded
 | Progress callbacks | Partial | Define callback function; annotate `wait_until_ready()` call |
 | Compound operations | Partial | Show method signature; annotate cluster-required step |
 | Capability discovery | Partial | Show `get_capabilities()` usage; annotate cluster-required step |
-| CLI tool | Partial | Shell script with commands; annotate cluster-required commands |
+| CLI tool | Partial | Python script using subprocess to show CLI commands; annotate cluster-required commands |
 
 ### R13: Version Annotation Format
 

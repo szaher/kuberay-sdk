@@ -312,6 +312,187 @@ async def main():
 asyncio.run(main())
 ```
 
+### Convenience Imports
+
+*Added in v0.2.0*
+
+Common types are re-exported from the top-level package, so you don't need deep module imports:
+
+```python
+# Instead of this:
+from kuberay_sdk.models.cluster import WorkerGroup
+from kuberay_sdk.models.runtime_env import RuntimeEnv
+from kuberay_sdk.models.storage import StorageVolume
+
+# You can write this:
+from kuberay_sdk import KubeRayClient, WorkerGroup, RuntimeEnv, StorageVolume
+```
+
+All re-exported types: `KubeRayClient`, `AsyncKubeRayClient`, `SDKConfig`, `WorkerGroup`, `HeadNodeConfig`, `ClusterConfig`, `JobConfig`, `ServiceConfig`, `RuntimeEnv`, `ExperimentTracking`, `StorageVolume`.
+
+### Configuration File & Environment Variables
+
+*Added in v0.2.0*
+
+The SDK can load settings from a YAML config file and environment variables, eliminating repeated `SDKConfig` boilerplate:
+
+```yaml
+# ~/.kuberay/config.yaml
+namespace: ml-team
+timeout: 120
+retry:
+  max_attempts: 5
+  backoff_factor: 1.0
+```
+
+```python
+from kuberay_sdk import KubeRayClient
+
+# No SDKConfig needed — loads from config file automatically
+client = KubeRayClient()
+```
+
+Environment variables override the config file:
+
+```bash
+export KUBERAY_NAMESPACE=experiments
+export KUBERAY_TIMEOUT=300
+```
+
+**Configuration precedence** (highest to lowest):
+
+1. Explicit `SDKConfig(...)` arguments
+2. `KUBERAY_*` environment variables
+3. `~/.kuberay/config.yaml` file
+4. Built-in defaults
+
+Available environment variables: `KUBERAY_CONFIG` (config file path), `KUBERAY_NAMESPACE`, `KUBERAY_TIMEOUT`, `KUBERAY_RETRY_MAX_ATTEMPTS`, `KUBERAY_RETRY_BACKOFF_FACTOR`.
+
+> **Security note**: The config file stores operational settings only (namespace, timeout, retry).
+> Do NOT store credentials or auth tokens in this file.
+> Authentication is handled by kubeconfig and [kube-authkit](https://pypi.org/project/kube-authkit/).
+
+### Dry-Run Mode
+
+*Added in v0.2.0*
+
+Preview the CRD manifest that would be created, without making any Kubernetes API call:
+
+```python
+result = client.create_cluster("test-cluster", workers=4, dry_run=True)
+
+# Inspect as a dictionary
+print(result.to_dict()["spec"]["workerGroupSpecs"][0]["replicas"])  # 4
+
+# Export as YAML for review or kubectl apply
+print(result.to_yaml())
+```
+
+Dry-run works for `create_cluster()`, `create_job()`, and `create_service()`. It validates the pydantic models locally and returns a `DryRunResult` without contacting the API server.
+
+### Presets
+
+*Added in v0.2.0*
+
+Built-in presets provide opinionated defaults for common cluster configurations:
+
+```python
+from kuberay_sdk.presets import list_presets
+
+# See available presets
+for p in list_presets():
+    print(f"{p.name}: {p.description}")
+# dev: Lightweight development cluster
+# gpu-single: Single-GPU training node
+# data-processing: Multi-node data processing
+
+# Create a cluster with a preset
+cluster = client.create_cluster("training", preset="gpu-single")
+
+# Override preset defaults with explicit parameters
+cluster = client.create_cluster("big-training", preset="gpu-single", workers=4)
+```
+
+### Progress Callbacks
+
+*Added in v0.2.0*
+
+Monitor long-running wait operations with a callback:
+
+```python
+def on_progress(status):
+    print(f"[{status.elapsed_seconds:.0f}s] {status.state} — {status.message}")
+
+cluster.wait_until_ready(timeout=300, progress_callback=on_progress)
+# [5s] creating — Waiting for head pod...
+# [15s] creating — Head pod running, waiting for workers...
+# [25s] ready — All 4/4 workers ready
+```
+
+The callback receives a `ProgressStatus` object with `state`, `elapsed_seconds`, `message`, and `metadata` fields. Also works with `job.wait(progress_callback=...)`.
+
+### Compound Operations
+
+*Added in v0.2.0*
+
+The most common workflow — create a cluster, wait for it, and submit a job — in a single call:
+
+```python
+job = client.create_cluster_and_submit_job(
+    cluster_name="ephemeral",
+    workers=4,
+    entrypoint="python train.py",
+)
+print(job.status())
+```
+
+On failure, the partially-created cluster is **not** deleted. The error includes the cluster handle so you can inspect or clean up.
+
+### Capability Discovery
+
+*Added in v0.2.0*
+
+Discover what features are available on the cluster before attempting operations:
+
+```python
+caps = client.get_capabilities()
+
+if caps.gpu_available:
+    cluster = client.create_cluster("gpu-job", preset="gpu-single")
+else:
+    cluster = client.create_cluster("cpu-job", preset="data-processing")
+
+if caps.kueue_available:
+    cluster = client.create_cluster("queued", queue="default")
+```
+
+Returns a `ClusterCapabilities` object with `kuberay_installed`, `kuberay_version`, `gpu_available`, `gpu_types`, `kueue_available`, and `openshift` fields. Fields set to `None` mean the SDK lacked permissions to detect that capability.
+
+### CLI Tool
+
+*Added in v0.2.0*
+
+Manage Ray resources from the terminal without writing Python scripts:
+
+```bash
+# List clusters
+$ kuberay cluster list
+NAME            STATE    WORKERS   AGE
+training        ready    4/4       2h
+dev             creating 0/2       5m
+
+# Create with a preset
+$ kuberay cluster create my-cluster --preset gpu-single --workers 2
+
+# JSON output for scripting
+$ kuberay cluster list --output json | jq '.[].name'
+
+# Check cluster capabilities
+$ kuberay capabilities
+```
+
+For the full command reference with all subcommands and options, see the [CLI Reference](https://szaher.github.io/kuberay-sdk/user-guide/cli-reference/).
+
 ## Configuration
 
 `SDKConfig` controls client-wide defaults:
