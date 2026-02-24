@@ -326,6 +326,7 @@ class JobService:
         namespace: str,
         timeout: float = 3600,
         poll_interval: float = 2.0,
+        progress_callback: Any = None,
     ) -> JobStatus:
         """Poll until a RayJob CR reaches a terminal state.
 
@@ -336,6 +337,9 @@ class JobService:
             namespace: Job namespace.
             timeout: Maximum seconds to wait.
             poll_interval: Seconds between polls.
+            progress_callback: Optional callable invoked each poll cycle with
+                a ``ProgressStatus`` object. Exceptions raised by the callback
+                are caught and logged (never propagate).
 
         Returns:
             The final JobStatus.
@@ -346,7 +350,10 @@ class JobService:
         Example:
             >>> status = svc.wait("my-job", "default", timeout=3600)
         """
+        from kuberay_sdk.models.progress import ProgressStatus
+
         start = time.monotonic()
+        last_progress: ProgressStatus | None = None
 
         while True:
             elapsed = time.monotonic() - start
@@ -354,9 +361,23 @@ class JobService:
                 raise TimeoutError(
                     f"wait({name})",
                     timeout,
+                    last_status=last_progress,
                 )
 
             status = self.get_status(name, namespace)
+            progress = ProgressStatus(
+                state=status.state.value,
+                elapsed_seconds=elapsed,
+                message=f"Job state: {status.state.value}",
+            )
+            last_progress = progress
+
+            if progress_callback is not None:
+                try:
+                    progress_callback(progress)
+                except Exception:
+                    logger.warning("Progress callback raised an exception", exc_info=True)
+
             if status.state.value in _CRD_TERMINAL_STATES:
                 return status
 
@@ -368,6 +389,7 @@ class JobService:
         job_id: str,
         timeout: float = 3600,
         poll_interval: float = 2.0,
+        progress_callback: Any = None,
     ) -> dict[str, Any]:
         """Poll the Dashboard until a job reaches a terminal state.
 
@@ -378,6 +400,9 @@ class JobService:
             job_id: The Dashboard job ID.
             timeout: Maximum seconds to wait.
             poll_interval: Seconds between polls.
+            progress_callback: Optional callable invoked each poll cycle with
+                a ``ProgressStatus`` object. Exceptions raised by the callback
+                are caught and logged (never propagate).
 
         Returns:
             The final job status dict from the Dashboard.
@@ -388,7 +413,10 @@ class JobService:
         Example:
             >>> result = svc.wait_dashboard_job(dc, "raysubmit_abc123", timeout=3600)
         """
+        from kuberay_sdk.models.progress import ProgressStatus
+
         start = time.monotonic()
+        last_progress: ProgressStatus | None = None
 
         while True:
             elapsed = time.monotonic() - start
@@ -396,10 +424,24 @@ class JobService:
                 raise TimeoutError(
                     f"wait_dashboard_job({job_id})",
                     timeout,
+                    last_status=last_progress,
                 )
 
             status_dict = dashboard_client.get_job_status(job_id)
             job_status = status_dict.get("status", "").upper()
+            progress = ProgressStatus(
+                state=job_status,
+                elapsed_seconds=elapsed,
+                message=status_dict.get("message", ""),
+            )
+            last_progress = progress
+
+            if progress_callback is not None:
+                try:
+                    progress_callback(progress)
+                except Exception:
+                    logger.warning("Progress callback raised an exception", exc_info=True)
+
             if job_status in _DASHBOARD_TERMINAL_STATES:
                 return status_dict
 

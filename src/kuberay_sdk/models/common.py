@@ -99,6 +99,38 @@ class ResourceRequirements:
         return {"requests": dict(resources), "limits": dict(resources)}
 
 
+class DryRunResult:
+    """Wrapper for dry-run CRD manifest preview."""
+
+    __slots__ = ("kind", "manifest")
+
+    def __init__(self, manifest: dict[str, Any], kind: str) -> None:
+        """Create a DryRunResult from a CRD manifest dict.
+
+        Raises ValueError if the manifest is missing required top-level keys.
+        """
+        required = {"apiVersion", "kind", "metadata", "spec"}
+        missing = required - set(manifest.keys())
+        if missing:
+            raise ValueError(f"Manifest missing required keys: {missing}")
+        self.manifest = manifest
+        self.kind = kind
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the raw CRD manifest dictionary."""
+        return dict(self.manifest)
+
+    def to_yaml(self) -> str:
+        """Return the CRD manifest as a YAML string."""
+        import yaml
+
+        return yaml.dump(self.manifest, default_flow_style=False, sort_keys=False)
+
+    def __repr__(self) -> str:
+        name = self.manifest.get("metadata", {}).get("name", "?")
+        return f"DryRunResult(kind={self.kind!r}, name={name!r})"
+
+
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     """Deep-merge override into base, returning a new dict.
 

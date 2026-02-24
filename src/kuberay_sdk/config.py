@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import os
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -122,3 +124,109 @@ def check_kuberay_crds(api_client: Any) -> bool:
     except Exception as exc:
         logger.warning("Could not verify KubeRay CRDs: %s", exc)
         raise KubeRayOperatorNotFoundError() from exc
+
+
+# ──────────────────────────────────────────────
+# Config file / env-var loading (US-003)
+# ──────────────────────────────────────────────
+
+_DEFAULT_CONFIG_PATH = Path.home() / ".kuberay" / "config.yaml"
+
+
+def load_config_file(path: Path | None = None) -> dict[str, Any]:
+    """Load config from a YAML file. Returns empty dict if file not found.
+
+    Resolution order for the file path:
+    1. Explicit *path* argument.
+    2. ``KUBERAY_CONFIG`` environment variable.
+    3. ``~/.kuberay/config.yaml`` (default).
+    """
+    config_path = path
+    if config_path is None:
+        env_path = os.environ.get("KUBERAY_CONFIG")
+        config_path = Path(env_path) if env_path else _DEFAULT_CONFIG_PATH
+
+    if not config_path.is_file():
+        return {}
+
+    import yaml
+
+    with open(config_path) as f:
+        data = yaml.safe_load(f)
+
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid config file: expected YAML mapping, got {type(data).__name__}")
+    return data
+
+
+def load_env_vars() -> dict[str, Any]:
+    """Load config from ``KUBERAY_*`` environment variables.
+
+    Returns a dict of overrides (only keys whose env vars are set).
+    """
+    result: dict[str, Any] = {}
+
+    ns = os.environ.get("KUBERAY_NAMESPACE")
+    if ns is not None:
+        result["namespace"] = ns
+
+    timeout = os.environ.get("KUBERAY_TIMEOUT")
+    if timeout is not None:
+        try:
+            result["retry_timeout"] = float(timeout)
+        except ValueError as err:
+            raise ValueError(f"Invalid KUBERAY_TIMEOUT value: {timeout!r} (must be a number)") from err
+
+    max_attempts = os.environ.get("KUBERAY_RETRY_MAX_ATTEMPTS")
+    if max_attempts is not None:
+        try:
+            result["retry_max_attempts"] = int(max_attempts)
+        except ValueError as err:
+            raise ValueError(
+                f"Invalid KUBERAY_RETRY_MAX_ATTEMPTS value: {max_attempts!r} (must be an integer)"
+            ) from err
+
+    backoff = os.environ.get("KUBERAY_RETRY_BACKOFF_FACTOR")
+    if backoff is not None:
+        try:
+            result["retry_backoff_factor"] = float(backoff)
+        except ValueError as err:
+            raise ValueError(f"Invalid KUBERAY_RETRY_BACKOFF_FACTOR value: {backoff!r} (must be a number)") from err
+
+    return result
+
+
+def resolve_config(explicit: SDKConfig | None = None) -> SDKConfig:
+    """Resolve config with precedence: explicit > env vars > config file > defaults.
+
+    If *explicit* is provided, it is returned as-is. Otherwise, a new
+    :class:`SDKConfig` is built by layering config-file values, then
+    environment-variable overrides, on top of the built-in defaults.
+    """
+    if explicit is not None:
+        return explicit
+
+    file_config = load_config_file()
+    env_config = load_env_vars()
+
+    # Start with an empty kwargs dict; SDKConfig will fill in defaults
+    kwargs: dict[str, Any] = {}
+
+    # Apply file config
+    if "namespace" in file_config:
+        kwargs["namespace"] = file_config["namespace"]
+    if "timeout" in file_config:
+        kwargs["retry_timeout"] = float(file_config["timeout"])
+    retry = file_config.get("retry", {})
+    if isinstance(retry, dict):
+        if "max_attempts" in retry:
+            kwargs["retry_max_attempts"] = int(retry["max_attempts"])
+        if "backoff_factor" in retry:
+            kwargs["retry_backoff_factor"] = float(retry["backoff_factor"])
+
+    # Apply env vars (override file values)
+    kwargs.update(env_config)
+
+    return SDKConfig(**kwargs)

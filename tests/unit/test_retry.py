@@ -171,11 +171,13 @@ class TestWithRetry:
         with pytest.raises(Exception):
             always_fail()
 
-        # Expected delays: 0.5*(2^0)=0.5, 0.5*(2^1)=1.0, 0.5*(2^2)=2.0, 0.5*(2^3)=4.0
         # Sleep called 4 times (after attempts 1, 2, 3, 4; not after attempt 5)
         assert mock_sleep.call_count == 4
         delays = [c.args[0] for c in mock_sleep.call_args_list]
-        assert delays == [0.5, 1.0, 2.0, 4.0]
+        # With jitter, delays are random in [0, backoff_factor * 2^(attempt-1)]
+        max_delays = [0.5, 1.0, 2.0, 4.0]
+        for delay, max_delay in zip(delays, max_delays, strict=True):
+            assert 0 <= delay <= max_delay, f"Delay {delay} not in [0, {max_delay}]"
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
@@ -244,8 +246,11 @@ class TestWithRetry:
             always_fail()
 
         delays = [c.args[0] for c in mock_sleep.call_args_list]
-        # 2.0*(2^0)=2.0, 2.0*(2^1)=4.0
-        assert delays == [2.0, 4.0]
+        # With jitter: delays in [0, 2.0*(2^0)]=[0,2.0] and [0, 2.0*(2^1)]=[0,4.0]
+        max_delays = [2.0, 4.0]
+        assert len(delays) == 2
+        for delay, max_delay in zip(delays, max_delays, strict=True):
+            assert 0 <= delay <= max_delay, f"Delay {delay} not in [0, {max_delay}]"
 
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
@@ -261,11 +266,16 @@ class TestWithRetry:
             slow()
         assert "5" in str(exc_info.value)
 
+    @patch("kuberay_sdk.retry.random.uniform")
     @patch("kuberay_sdk.retry.time.sleep")
     @patch("kuberay_sdk.retry.time.monotonic")
-    def test_delay_capped_by_remaining_timeout(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
+    def test_delay_capped_by_remaining_timeout(
+        self, mock_monotonic: MagicMock, mock_sleep: MagicMock, mock_uniform: MagicMock
+    ) -> None:
         # Timeout is 10s. After attempt 1, elapsed is 8s, so remaining=2s.
-        # Backoff would be 5.0*(2^0) = 5.0 but should be capped at 2.0.
+        # Jittered backoff would be uniform(0, 5.0*(2^0)) = uniform(0, 5.0).
+        # Force uniform to return 5.0 (max), which should be capped at remaining=2.0.
+        mock_uniform.return_value = 5.0
         mock_monotonic.side_effect = [
             0.0,  # start_time
             0.0,  # elapsed check attempt 1
@@ -280,7 +290,7 @@ class TestWithRetry:
         with pytest.raises(Exception):
             always_fail()
 
-        # First sleep should be capped
+        # First sleep should be capped at remaining time (2.0)
         assert mock_sleep.call_count >= 1
         first_delay = mock_sleep.call_args_list[0].args[0]
         assert first_delay == 2.0
@@ -342,7 +352,105 @@ class TestWithRetry:
 
 
 # ---------------------------------------------------------------------------
-# 3. idempotent_create()
+# 3. Jitter (T037)
+# ---------------------------------------------------------------------------
+
+
+class TestJitter:
+    """Test that retry delays use full jitter (random.uniform)."""
+
+    @patch("kuberay_sdk.retry.time.sleep")
+    @patch("kuberay_sdk.retry.time.monotonic")
+    def test_retry_delays_are_non_deterministic(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
+        """Run the same retry scenario twice and verify random.uniform is called (delays differ)."""
+        mock_monotonic.return_value = 0.0
+        collected_delays: list[list[float]] = []
+
+        for _ in range(2):
+            mock_sleep.reset_mock()
+
+            @with_retry(max_attempts=3, backoff_factor=1.0, timeout=60.0)
+            def always_fail() -> None:
+                raise _make_api_exc(503)
+
+            with pytest.raises(Exception):
+                always_fail()
+
+            delays = [c.args[0] for c in mock_sleep.call_args_list]
+            collected_delays.append(delays)
+
+        # With jitter via random.uniform, two runs should (almost certainly) differ.
+        # We verify at least one delay differs between runs.
+        assert collected_delays[0] != collected_delays[1], (
+            "Expected non-deterministic delays with jitter, but both runs produced identical delays"
+        )
+
+    @patch("kuberay_sdk.retry.time.sleep")
+    @patch("kuberay_sdk.retry.time.monotonic")
+    def test_jitter_delay_bounded(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
+        """Verify delay does not exceed backoff_factor * 2^(attempt-1) for each attempt."""
+        mock_monotonic.return_value = 0.0
+
+        @with_retry(max_attempts=5, backoff_factor=1.0, timeout=60.0)
+        def always_fail() -> None:
+            raise _make_api_exc(503)
+
+        with pytest.raises(Exception):
+            always_fail()
+
+        delays = [c.args[0] for c in mock_sleep.call_args_list]
+        assert len(delays) == 4  # sleeps after attempts 1-4
+        for i, delay in enumerate(delays):
+            max_delay = 1.0 * (2**i)  # backoff_factor * 2^(attempt-1)
+            assert delay <= max_delay, f"Delay {delay} exceeds max {max_delay} on attempt {i + 1}"
+
+    @patch("kuberay_sdk.retry.time.sleep")
+    @patch("kuberay_sdk.retry.time.monotonic")
+    def test_jitter_delay_non_negative(self, mock_monotonic: MagicMock, mock_sleep: MagicMock) -> None:
+        """All jittered delays must be >= 0."""
+        mock_monotonic.return_value = 0.0
+
+        @with_retry(max_attempts=5, backoff_factor=0.5, timeout=60.0)
+        def always_fail() -> None:
+            raise _make_api_exc(502)
+
+        with pytest.raises(Exception):
+            always_fail()
+
+        delays = [c.args[0] for c in mock_sleep.call_args_list]
+        for delay in delays:
+            assert delay >= 0, f"Delay {delay} is negative"
+
+    @patch("kuberay_sdk.retry.random.uniform")
+    @patch("kuberay_sdk.retry.time.sleep")
+    @patch("kuberay_sdk.retry.time.monotonic")
+    def test_jitter_uses_random_uniform(
+        self, mock_monotonic: MagicMock, mock_sleep: MagicMock, mock_uniform: MagicMock
+    ) -> None:
+        """Verify random.uniform is called during retry delay computation."""
+        mock_monotonic.return_value = 0.0
+        mock_uniform.return_value = 0.25  # controlled return value
+
+        @with_retry(max_attempts=3, backoff_factor=1.0, timeout=60.0)
+        def always_fail() -> None:
+            raise _make_api_exc(503)
+
+        with pytest.raises(Exception):
+            always_fail()
+
+        # random.uniform should have been called for each retry delay
+        assert mock_uniform.call_count == 2  # after attempt 1 and 2
+        # Verify it was called with correct bounds: uniform(0, backoff_factor * 2^(attempt-1))
+        calls = mock_uniform.call_args_list
+        assert calls[0].args == (0, 1.0)  # attempt 1: uniform(0, 1.0 * 2^0) = uniform(0, 1.0)
+        assert calls[1].args == (0, 2.0)  # attempt 2: uniform(0, 1.0 * 2^1) = uniform(0, 2.0)
+        # Verify the returned value was used for sleep
+        delays = [c.args[0] for c in mock_sleep.call_args_list]
+        assert all(d == 0.25 for d in delays)
+
+
+# ---------------------------------------------------------------------------
+# 4. idempotent_create()
 # ---------------------------------------------------------------------------
 
 

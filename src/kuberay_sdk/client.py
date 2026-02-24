@@ -13,10 +13,11 @@ import logging
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
 
-from kuberay_sdk.config import SDKConfig, check_kuberay_crds, get_k8s_client, resolve_namespace
+from kuberay_sdk.config import SDKConfig, check_kuberay_crds, get_k8s_client, resolve_config, resolve_namespace
 from kuberay_sdk.errors import KubeRayError
 
 if TYPE_CHECKING:
+    from kuberay_sdk.models.capabilities import ClusterCapabilities
     from kuberay_sdk.models.cluster import ClusterStatus, HeadNodeConfig, WorkerGroup
     from kuberay_sdk.models.runtime_env import ExperimentTracking, RuntimeEnv
     from kuberay_sdk.models.service import ServiceStatus
@@ -48,6 +49,9 @@ class ClusterHandle:
         self._name = name
         self._namespace = namespace
         self._client = client
+
+    def __repr__(self) -> str:
+        return f"ClusterHandle(name={self._name!r}, namespace={self._namespace!r})"
 
     @property
     def name(self) -> str:
@@ -91,8 +95,13 @@ class ClusterHandle:
         svc = ClusterService(self._client._custom_api, self._client._config)
         svc.delete(self._name, self._namespace, force=force)
 
-    def wait_until_ready(self, timeout: float = 300) -> None:
+    def wait_until_ready(self, timeout: float = 300, progress_callback: Any = None) -> None:
         """Block until cluster reaches RUNNING state.
+
+        Args:
+            timeout: Maximum seconds to wait.
+            progress_callback: Optional callable invoked each poll cycle with
+                a ``ProgressStatus`` object.
 
         Example:
             >>> cluster.wait_until_ready(timeout=300)
@@ -100,7 +109,12 @@ class ClusterHandle:
         from kuberay_sdk.services.cluster_service import ClusterService
 
         svc = ClusterService(self._client._custom_api, self._client._config)
-        svc.wait_until_ready(self._name, self._namespace, timeout=timeout)
+        svc.wait_until_ready(
+            self._name,
+            self._namespace,
+            timeout=timeout,
+            progress_callback=progress_callback,
+        )
 
     def dashboard_url(self) -> str:
         """Get Ray Dashboard URL.
@@ -211,6 +225,9 @@ class JobHandle:
         self._dashboard_url = dashboard_url
         self._cluster_name = cluster_name
 
+    def __repr__(self) -> str:
+        return f"JobHandle(name={self._name!r}, namespace={self._namespace!r}, mode={self._mode!r})"
+
     @property
     def name(self) -> str:
         return self._name
@@ -277,8 +294,13 @@ class JobHandle:
         else:
             svc.stop(self._name, self._namespace)
 
-    def wait(self, timeout: float = 3600) -> Any:
+    def wait(self, timeout: float = 3600, progress_callback: Any = None) -> Any:
         """Block until job completes. Returns final status.
+
+        Args:
+            timeout: Maximum seconds to wait.
+            progress_callback: Optional callable invoked each poll cycle with
+                a ``ProgressStatus`` object.
 
         Example:
             >>> job.wait(timeout=3600)
@@ -290,8 +312,13 @@ class JobHandle:
             from kuberay_sdk.services.dashboard import DashboardClient
 
             dc = DashboardClient(self._dashboard_url)
-            return svc.wait_dashboard_job(dc, self._name, timeout=timeout)
-        return svc.wait(self._name, self._namespace, timeout=timeout)
+            return svc.wait_dashboard_job(dc, self._name, timeout=timeout, progress_callback=progress_callback)
+        return svc.wait(
+            self._name,
+            self._namespace,
+            timeout=timeout,
+            progress_callback=progress_callback,
+        )
 
     def progress(self) -> dict[str, Any]:
         """Get job progress from Ray Dashboard.
@@ -343,6 +370,9 @@ class ServiceHandle:
         self._name = name
         self._namespace = namespace
         self._client = client
+
+    def __repr__(self) -> str:
+        return f"ServiceHandle(name={self._name!r}, namespace={self._namespace!r})"
 
     @property
     def name(self) -> str:
@@ -415,7 +445,7 @@ class KubeRayClient:
     """
 
     def __init__(self, config: SDKConfig | None = None) -> None:
-        self._config = config or SDKConfig()
+        self._config = resolve_config(config)
         self._api_client = get_k8s_client(self._config.auth)
 
         from kubernetes.client import CustomObjectsApi
@@ -450,15 +480,69 @@ class KubeRayClient:
         queue: str | None = None,
         enable_autoscaling: bool = False,
         raw_overrides: dict | None = None,  # type: ignore[type-arg]
-    ) -> ClusterHandle:
+        preset: str | Any | None = None,
+        dry_run: bool = False,
+    ) -> ClusterHandle | Any:
         """Create a RayCluster.
 
         Example:
             >>> cluster = client.create_cluster("my-cluster", workers=4, gpus_per_worker=1)
         """
-        from kuberay_sdk.services.cluster_service import ClusterService
+        # Resolve preset defaults
+        if preset is not None:
+            from kuberay_sdk.presets import get_preset
+
+            resolved_preset = get_preset(preset) if isinstance(preset, str) else preset
+            if workers == 1:  # default
+                workers = resolved_preset.workers
+            if cpus_per_worker == 1.0:  # default
+                cpus_per_worker = float(resolved_preset.worker_cpu)
+            if gpus_per_worker == 0:  # default
+                gpus_per_worker = resolved_preset.worker_gpu
+            if memory_per_worker == "2Gi":  # default
+                memory_per_worker = resolved_preset.worker_memory
+            if head is None:
+                from kuberay_sdk.models.cluster import HeadNodeConfig as _HeadNodeConfig
+
+                head = _HeadNodeConfig(
+                    cpus=float(resolved_preset.head_cpu),
+                    memory=resolved_preset.head_memory,
+                )
+            if ray_version is None:
+                ray_version = resolved_preset.ray_version
 
         ns = resolve_namespace(self._config, namespace)
+
+        if dry_run:
+            from kuberay_sdk.models.cluster import ClusterConfig
+            from kuberay_sdk.models.common import DryRunResult
+
+            config_model = ClusterConfig(
+                name=name,
+                namespace=ns,
+                workers=workers,
+                cpus_per_worker=cpus_per_worker,
+                gpus_per_worker=gpus_per_worker,
+                memory_per_worker=memory_per_worker,
+                worker_groups=worker_groups,
+                head=head,
+                ray_version=ray_version,
+                image=image,
+                storage=storage,
+                runtime_env=runtime_env,
+                labels=labels,
+                annotations=annotations,
+                tolerations=tolerations,
+                node_selector=node_selector,
+                hardware_profile=hardware_profile,
+                queue=queue,
+                enable_autoscaling=enable_autoscaling,
+                raw_overrides=raw_overrides,
+            )
+            return DryRunResult(config_model.to_crd_dict(), "RayCluster")
+
+        from kuberay_sdk.services.cluster_service import ClusterService
+
         svc = ClusterService(self._custom_api, self._config)
         svc.create(
             name=name,
@@ -535,7 +619,8 @@ class KubeRayClient:
         hardware_profile: str | None = None,
         experiment_tracking: ExperimentTracking | dict | None = None,  # type: ignore[type-arg]
         raw_overrides: dict | None = None,  # type: ignore[type-arg]
-    ) -> JobHandle:
+        dry_run: bool = False,
+    ) -> JobHandle | Any:
         """Create a RayJob CR (provisions its own disposable cluster).
 
         Example:
@@ -547,9 +632,38 @@ class KubeRayClient:
             ... )
             >>> job.wait()
         """
+        ns = resolve_namespace(self._config, namespace)
+
+        if dry_run:
+            from kuberay_sdk.models.common import DryRunResult
+            from kuberay_sdk.models.job import JobConfig
+
+            config_model = JobConfig(
+                name=name,
+                namespace=ns,
+                entrypoint=entrypoint,
+                workers=workers,
+                cpus_per_worker=cpus_per_worker,
+                gpus_per_worker=gpus_per_worker,
+                memory_per_worker=memory_per_worker,
+                worker_groups=worker_groups,
+                head=head,
+                ray_version=ray_version,
+                image=image,
+                storage=storage,
+                runtime_env=runtime_env,
+                shutdown_after_finish=shutdown_after_finish,
+                labels=labels,
+                annotations=annotations,
+                queue=queue,
+                hardware_profile=hardware_profile,
+                experiment_tracking=experiment_tracking,
+                raw_overrides=raw_overrides,
+            )
+            return DryRunResult(config_model.to_crd_dict(), "RayJob")
+
         from kuberay_sdk.services.job_service import JobService
 
-        ns = resolve_namespace(self._config, namespace)
         svc = JobService(self._custom_api, self._config)
         svc.create(
             name=name,
@@ -624,7 +738,8 @@ class KubeRayClient:
         route_enabled: bool | None = None,
         serve_config_v2: str | None = None,
         raw_overrides: dict | None = None,  # type: ignore[type-arg]
-    ) -> ServiceHandle:
+        dry_run: bool = False,
+    ) -> ServiceHandle | Any:
         """Create a RayService CR.
 
         Example:
@@ -635,9 +750,37 @@ class KubeRayClient:
             ...     gpus_per_worker=1,
             ... )
         """
+        ns = resolve_namespace(self._config, namespace)
+
+        if dry_run:
+            from kuberay_sdk.models.common import DryRunResult
+            from kuberay_sdk.models.service import ServiceConfig
+
+            config_model = ServiceConfig(
+                name=name,
+                namespace=ns,
+                import_path=import_path,
+                num_replicas=num_replicas,
+                runtime_env=runtime_env,
+                ray_version=ray_version,
+                image=image,
+                workers=workers,
+                cpus_per_worker=cpus_per_worker,
+                gpus_per_worker=gpus_per_worker,
+                memory_per_worker=memory_per_worker,
+                worker_groups=worker_groups,
+                head=head,
+                storage=storage,
+                labels=labels,
+                annotations=annotations,
+                route_enabled=route_enabled,
+                serve_config_v2=serve_config_v2,
+                raw_overrides=raw_overrides,
+            )
+            return DryRunResult(config_model.to_crd_dict(), "RayService")
+
         from kuberay_sdk.services.service_service import ServiceService
 
-        ns = resolve_namespace(self._config, namespace)
         svc = ServiceService(self._custom_api, self._config)
         svc.create(
             name=name,
@@ -686,3 +829,81 @@ class KubeRayClient:
         ns = resolve_namespace(self._config, namespace)
         svc = ServiceService(self._custom_api, self._config)
         return svc.list(ns)
+
+    # ── Compound operations ──
+
+    def create_cluster_and_submit_job(
+        self,
+        cluster_name: str,
+        *,
+        entrypoint: str,
+        namespace: str | None = None,
+        workers: int = 1,
+        cpus_per_worker: float = 1.0,
+        gpus_per_worker: int = 0,
+        memory_per_worker: str = "2Gi",
+        worker_groups: list[WorkerGroup] | None = None,
+        head: HeadNodeConfig | None = None,
+        ray_version: str | None = None,
+        image: str | None = None,
+        storage: list[StorageVolume] | None = None,
+        runtime_env: RuntimeEnv | dict | None = None,  # type: ignore[type-arg]
+        preset: str | Any | None = None,
+        wait_timeout: float = 300,
+        progress_callback: Any = None,
+    ) -> JobHandle:
+        """Create a cluster, wait for it to be ready, then submit a job.
+
+        On failure, the cluster is NOT deleted -- the error includes
+        the cluster handle for inspection/cleanup.
+
+        Example:
+            >>> job = client.create_cluster_and_submit_job(
+            ...     "my-cluster",
+            ...     entrypoint="python train.py",
+            ...     workers=4,
+            ... )
+        """
+        cluster = self.create_cluster(
+            cluster_name,
+            namespace=namespace,
+            workers=workers,
+            cpus_per_worker=cpus_per_worker,
+            gpus_per_worker=gpus_per_worker,
+            memory_per_worker=memory_per_worker,
+            worker_groups=worker_groups,
+            head=head,
+            ray_version=ray_version,
+            image=image,
+            storage=storage,
+            runtime_env=runtime_env,
+            preset=preset,
+        )
+        try:
+            cluster.wait_until_ready(
+                timeout=wait_timeout,
+                progress_callback=progress_callback,
+            )
+        except Exception as exc:
+            # Attach cluster handle so user can clean up
+            exc.cluster = cluster  # type: ignore[attr-defined]
+            raise
+        return cluster.submit_job(entrypoint=entrypoint, runtime_env=runtime_env)
+
+    # ── Capability discovery ──
+
+    def get_capabilities(self) -> ClusterCapabilities:
+        """Discover cluster capabilities (KubeRay, GPU, Kueue, OpenShift).
+
+        Returns a :class:`~kuberay_sdk.models.capabilities.ClusterCapabilities`
+        object. Fields set to ``None`` mean the SDK could not determine the
+        capability (e.g. insufficient RBAC permissions).
+
+        Example:
+            >>> caps = client.get_capabilities()
+            >>> if caps.gpu_available:
+            ...     print(f"GPU types: {caps.gpu_types}")
+        """
+        from kuberay_sdk.capabilities import detect_capabilities
+
+        return detect_capabilities(self._api_client)

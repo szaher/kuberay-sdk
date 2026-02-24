@@ -116,6 +116,10 @@ nav:
       - Async Usage: user-guide/async-usage.md
       - Error Handling: user-guide/error-handling.md
       - Configuration: user-guide/configuration.md
+      - New Features: user-guide/new-features.md
+      - CLI Reference: user-guide/cli-reference.md
+      - Migration Guide: user-guide/migration.md
+      - Troubleshooting: user-guide/troubleshooting.md
   - Developer Guide:
       - Architecture: developer-guide/architecture.md
       - Development Setup: developer-guide/development-setup.md
@@ -131,5 +135,13 @@ nav:
       - Async Client: examples/async-client.md
       - Ray Serve Deployment: examples/ray-serve-deployment.md
       - OpenShift Features: examples/openshift-features.md
+      - Convenience Imports: examples/convenience-imports.md
+      - Config & Env Vars: examples/config-env-vars.md
+      - Dry-Run Preview: examples/dry-run-preview.md
+      - Presets: examples/presets-usage.md
+      - Progress Callbacks: examples/progress-callbacks.md
+      - Compound Operations: examples/compound-operations.md
+      - Capability Discovery: examples/capability-discovery.md
+      - CLI Usage: examples/cli-usage.md
       - MNIST Training: examples/mnist_training.ipynb
   - What's New: changelog.md

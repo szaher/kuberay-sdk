@@ -14,6 +14,7 @@ from __future__ import annotations
 import pytest
 
 from kuberay_sdk import KubeRayClient
+from kuberay_sdk.models.cluster import HeadNodeConfig
 
 
 @pytest.mark.e2e
@@ -26,8 +27,7 @@ class TestClusterSmoke:
             name="smoke-cluster",
             namespace=test_namespace,
             ray_version="2.9.0",
-            head_cpu="500m",
-            head_memory="512Mi",
+            head=HeadNodeConfig(cpus=0.5, memory="512Mi"),
         )
         try:
             status = handle.status()
@@ -42,8 +42,7 @@ class TestClusterSmoke:
             name="smoke-status",
             namespace=test_namespace,
             ray_version="2.9.0",
-            head_cpu="500m",
-            head_memory="512Mi",
+            head=HeadNodeConfig(cpus=0.5, memory="512Mi"),
         )
         try:
             status = handle.status()
@@ -63,8 +62,7 @@ class TestJobSmoke:
             namespace=test_namespace,
             ray_version="2.9.0",
             entrypoint="python -c \"import ray; ray.init(); print('hello from ray')\"",
-            head_cpu="500m",
-            head_memory="512Mi",
+            head=HeadNodeConfig(cpus=0.5, memory="512Mi"),
             shutdown_after_finish=True,
         )
         try:
@@ -72,7 +70,7 @@ class TestJobSmoke:
             assert status is not None, "Job status should not be None"
             assert handle.name == "smoke-job"
         finally:
-            handle.delete()
+            handle.stop()
 
 
 @pytest.mark.e2e
@@ -86,8 +84,7 @@ class TestServiceSmoke:
             namespace=test_namespace,
             ray_version="2.9.0",
             import_path="ray.serve.tests.test_config_files.world:app",
-            head_cpu="500m",
-            head_memory="512Mi",
+            head=HeadNodeConfig(cpus=0.5, memory="512Mi"),
         )
         try:
             status = handle.status()
