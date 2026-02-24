@@ -190,3 +190,63 @@ create_*(dry_run=True) → validate pydantic model → build CRD dict → return
 ```
 
 No Kubernetes API call is made.
+
+---
+
+## US14 Addendum: Documentation Artifacts (2026-02-24)
+
+US14 introduces no new code entities. The "data model" for this phase is the documentation artifact structure.
+
+### Documentation Artifacts
+
+| Artifact | Path | Type | Purpose |
+|----------|------|------|---------|
+| README feature sections | `README.md` | Modified | 8 new sections with quick-start snippets and version annotations |
+| New Features guide | `docs/user-guide/new-features.md` | New | Comprehensive user guide page for all 8 features |
+| CLI reference | `docs/user-guide/cli-reference.md` | New | Full CLI command reference with options and output examples |
+| Example: convenience imports | `examples/convenience_imports.py` | New | Standalone demo of top-level re-exports |
+| Example: config/env vars | `examples/config_and_env_vars.py` | New | Standalone demo of config file and env var precedence |
+| Example: dry-run | `examples/dry_run_preview.py` | New | Standalone demo of manifest preview |
+| Example: presets | `examples/presets_usage.py` | New | Standalone demo of preset listing and usage |
+| Example: progress callbacks | `examples/progress_callbacks.py` | New | Callback definition; cluster step annotated |
+| Example: compound ops | `examples/compound_operations.py` | New | Method usage; cluster step annotated |
+| Example: capability discovery | `examples/capability_discovery.py` | New | Discovery usage; cluster step annotated |
+| Example: CLI | `examples/cli_usage.sh` | New | Shell script with CLI commands; annotated |
+| MkDocs nav | `mkdocs.yml` | Modified | Add nav entries for new pages and examples |
+| Examples index | `docs/examples/index.md` | Modified | Add links to new example scripts |
+
+### Documentation Section Template (per feature)
+
+Each feature section in README and user guide follows this structure:
+
+```markdown
+### Feature Name
+
+*Added in v0.2.0*
+
+[1-2 sentence description of what this feature does and why it's useful.]
+
+​```python
+# Runnable code snippet
+​```
+
+[Optional: configuration table, additional examples, or notes.]
+```
+
+### Config Precedence Diagram (FR-036)
+
+```
+┌──────────────────────────────────────────┐
+│ Explicit SDKConfig arguments             │  ← Highest priority
+├──────────────────────────────────────────┤
+│ KUBERAY_* environment variables          │
+├──────────────────────────────────────────┤
+│ ~/.kuberay/config.yaml file              │
+├──────────────────────────────────────────┤
+│ Built-in defaults                        │  ← Lowest priority
+└──────────────────────────────────────────┘
+
+⚠ The config file stores operational settings only.
+  Do NOT store credentials or auth tokens.
+  Authentication is handled by kubeconfig and kube-authkit.
+```

@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: UX/DX improvement roadmap covering actionable errors, progress feedback, config files, convenience APIs, dry-run mode, presets, compound operations, retry jitter, CLI tool, docs improvements, and capability discovery.
 
+## Clarifications
+
+### Session 2026-02-24
+
+- Q: Should example scripts be runnable standalone (no live cluster) or require a live Kubernetes cluster? → A: Standalone — use dry-run mode or mocks where possible; annotate steps that require a live cluster with comments.
+- Q: Should config file documentation warn against storing credentials? → A: Yes — config file is non-sensitive only; auth handled by kubeconfig/kube-authkit. Documentation must include explicit warning.
+- Q: Where should the CLI command reference live? → A: Dedicated docs site page (MkDocs); README links to it but does not duplicate the full reference.
+- Q: Should documented features include minimum SDK version annotations? → A: Yes — each feature section notes the minimum SDK version required (e.g., "Added in v0.5.0").
+- Q: Does a user guide already exist or must US14 create one? → A: New document on docs site — no user guide page exists yet for the 8 new features.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Actionable Error Messages (Priority: P1)
@@ -216,6 +226,23 @@ Users familiar with kubectl and raw KubeRay CRDs have no guide for transitioning
 
 ---
 
+### User Story 14 — Comprehensive Documentation for New Features (Priority: P14)
+
+All 8 new SDK capabilities (dry-run mode, presets, progress callbacks, CLI tool, capability discovery, compound operations, config file/env var support, and convenience re-exports) shipped without corresponding documentation updates to the README, user guide, or example scripts. Users currently have no documentation for these features. The README, user guide, and examples must be updated to cover all 8 features with runnable code snippets.
+
+**Why this priority**: Features without documentation are invisible. Users cannot adopt capabilities they don't know exist. This is the final step to make the UX enhancements usable.
+
+**Independent Test**: Review the README, user guide, and example scripts and verify that every new feature is documented with at least one runnable code snippet per feature.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user reads the README, **When** they look for quick-start examples, **Then** they find usage examples for dry-run mode, presets, CLI tool, config files, and convenience imports.
+2. **Given** a user reads the user guide (a new page on the docs site), **When** they look for feature documentation, **Then** each of the 8 new features is covered with usage examples and configuration options.
+3. **Given** a user browses the example scripts, **When** they look for demonstrations, **Then** they find example scripts covering dry-run mode, presets, progress callbacks, CLI tool, capability discovery, compound operations, config/env vars, and top-level imports.
+4. **Given** a user follows any documented code snippet, **When** they copy and run it, **Then** the snippet is syntactically valid and demonstrates the described feature correctly.
+
+---
+
 ### Edge Cases
 
 - What happens when the config file path (`~/.kuberay/config.yaml`) is a directory instead of a file?
@@ -225,6 +252,7 @@ Users familiar with kubectl and raw KubeRay CRDs have no guide for transitioning
 - What happens when presets are combined with conflicting explicit parameters and `raw_overrides`?
 - What happens when capability discovery is called on a cluster where the user lacks RBAC permissions to list CRDs?
 - What happens when the CLI is invoked without a valid kubeconfig?
+- What happens when a user follows a README example but has an older SDK version that lacks the documented features?
 
 ## Requirements *(mandatory)*
 
@@ -287,6 +315,12 @@ Users familiar with kubectl and raw KubeRay CRDs have no guide for transitioning
 - **FR-032**: The SDK documentation MUST include a troubleshooting section with at least 5 common issues and resolutions.
 - **FR-033**: The SDK documentation MUST include a migration guide mapping kubectl/CRD operations to SDK equivalents.
 
+**Comprehensive Feature Documentation (US14)**
+- **FR-034**: The README MUST include sections covering dry-run mode, presets, progress callbacks, CLI tool, capability discovery, compound operations, config file/env var support, and convenience re-exports with usage examples. Each feature section MUST include a version annotation noting the minimum SDK version required (e.g., "Added in v0.5.0").
+- **FR-035**: The SDK MUST provide example scripts demonstrating each of the 8 new features with inline comments explaining each step. Examples MUST be runnable standalone (without a live cluster) using dry-run mode or mocks where possible; steps that require a live cluster MUST be annotated with comments.
+- **FR-036**: The documentation MUST show the configuration precedence order (explicit args > env vars > config file > defaults) with examples. The config file documentation MUST include an explicit warning that credentials and auth tokens MUST NOT be stored in the config file; authentication is handled by kubeconfig and kube-authkit.
+- **FR-037**: The CLI tool documentation MUST include a command reference with all subcommands, options, and output format examples. The command reference MUST be a dedicated page on the docs site (MkDocs); the README MUST link to it but not duplicate the full reference.
+
 ### Key Entities
 
 - **Remediation**: A text attribute on error objects containing step-by-step recovery instructions.
@@ -312,10 +346,12 @@ Users familiar with kubectl and raw KubeRay CRDs have no guide for transitioning
 - **SC-010**: Users can manage Ray resources from the terminal without writing Python scripts.
 - **SC-011**: Users can programmatically discover cluster capabilities before attempting operations.
 - **SC-012**: Common issues are documented with symptoms, causes, and step-by-step resolutions.
+- **SC-013**: All 8 new SDK features are documented in the README with at least one runnable code snippet per feature.
+- **SC-014**: Example scripts exist for each new feature and pass syntax validation (`ruff check examples/`).
 
 ## Assumptions
 
-- The config file format follows standard YAML conventions. The file path `~/.kuberay/config.yaml` follows the XDG convention for user-level configuration.
+- The config file format follows standard YAML conventions. The file path `~/.kuberay/config.yaml` follows the XDG convention for user-level configuration. The config file stores only non-sensitive operational settings (namespace, timeout, retry parameters); credentials and auth tokens are handled by kubeconfig and kube-authkit, not the SDK config file.
 - Environment variable names use the `KUBERAY_` prefix to avoid conflicts with other tools.
 - Presets are opinionated defaults, not exhaustive configuration templates. Users can always override any preset value.
 - The CLI tool uses an existing Python CLI framework (not specified here — implementation decision).

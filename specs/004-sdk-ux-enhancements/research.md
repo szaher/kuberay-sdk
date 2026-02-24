@@ -169,3 +169,68 @@ delay = random.uniform(0, min(delay, delay * 2))  # Full jitter, bounded
 **Alternatives considered**:
 - Lazy detection on first use: Rejected — users want upfront discovery for conditional logic.
 - Feature flags in config: Rejected — capabilities are cluster properties, not user preferences.
+
+---
+
+## US14 Addendum: Documentation Research (2026-02-24)
+
+### R11: Documentation Gap Analysis
+
+**Decision**: Update README, create new user guide page, create 8 example scripts, create CLI reference page.
+
+**Rationale**: Auditing existing documentation reveals that none of the 8 new SDK features (dry-run, presets, progress callbacks, CLI, capability discovery, compound ops, config files, convenience imports) are documented in the README, user guide, or example scripts. The existing docs infrastructure (MkDocs + Material + mkdocstrings) is fully operational, so the work is purely content authoring.
+
+**Current state**:
+- README.md: Covers core features (handle API, clusters, jobs, services, OpenShift, Kueue, async, retry, auth). No mention of 8 new features.
+- docs/user-guide/: 12 pages covering original features. Configuration page covers `SDKConfig` constructor only — no config file or env var docs.
+- examples/: 7 scripts for original features. No scripts for new features.
+- docs site nav: No entries for CLI reference or new feature documentation.
+
+**Gap**:
+- README needs 8 new sections (one per feature) with quick-start snippets
+- docs site needs 2 new pages: `new-features.md` (user guide) and `cli-reference.md` (CLI reference)
+- examples/ needs 8 new scripts (one per feature, standalone)
+- mkdocs.yml nav needs 3 new entries
+
+### R12: Example Script Standalone Strategy
+
+**Decision**: Examples use dry-run mode, temporary config files, import validation, and commented annotations for cluster-dependent steps.
+
+**Rationale**: Per clarification session, examples must run standalone without a live cluster. Features that inherently don't require a cluster (imports, config loading, dry-run, preset listing) run fully. Features that require a cluster (progress callbacks, compound ops, capability discovery, CLI commands) annotate those steps with `# NOTE: Requires a running KubeRay cluster` comments and demonstrate setup/config that works standalone.
+
+**Standalone mapping**:
+| Feature | Standalone? | Strategy |
+|---------|-------------|----------|
+| Convenience imports | Yes | Import and print types |
+| Config file/env vars | Yes | Write temp config, set env vars, verify precedence |
+| Dry-run mode | Yes | `dry_run=True` returns manifest without cluster |
+| Presets | Yes | `list_presets()` + `dry_run=True` with preset |
+| Progress callbacks | Partial | Define callback function; annotate `wait_until_ready()` call |
+| Compound operations | Partial | Show method signature; annotate cluster-required step |
+| Capability discovery | Partial | Show `get_capabilities()` usage; annotate cluster-required step |
+| CLI tool | Partial | Shell script with commands; annotate cluster-required commands |
+
+### R13: Version Annotation Format
+
+**Decision**: Use italic text `*Added in v0.2.0*` after each feature heading in README and user guide.
+
+**Rationale**: Consistent with Python library conventions (e.g., Python stdlib docs use "New in version X.Y"). Italic text is visually distinct but not intrusive. The version number corresponds to the release that includes the 004-sdk-ux-enhancements feature.
+
+**Alternatives considered**:
+- Badge/shield image: Rejected — heavyweight for inline doc annotations, adds image loading overhead.
+- Admonition box: Rejected — too prominent for a version note; admonitions are for warnings and tips.
+
+### R14: CLI Reference Page Structure
+
+**Decision**: Dedicated MkDocs page at `docs/user-guide/cli-reference.md` with full command tree, options, and output examples.
+
+**Rationale**: Per clarification session, the CLI reference lives on the docs site, not in the README. The README links to it. The page structure mirrors kubectl reference conventions: command tree overview, then per-subcommand sections with flags, examples, and sample output.
+
+**Page structure**:
+1. Overview (command tree diagram)
+2. Global options (`--namespace`, `--output`, `--config`)
+3. `kuberay cluster` subcommands (list, create, get, delete)
+4. `kuberay job` subcommands (list, create, get, delete)
+5. `kuberay service` subcommands (list, create, get, delete)
+6. `kuberay capabilities` command
+7. Output format examples (table vs JSON)

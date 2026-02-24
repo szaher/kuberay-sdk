@@ -36,4 +36,7 @@
 - FR-028 mentions "table format" and "JSON output" which describe output behavior, not implementation.
 - US10 mentions "kuberay" as a command name, which is a user-facing interface name, not an implementation detail.
 - Out of Scope section explicitly defers true async, unified job abstraction, and other high-effort items to separate features.
-- 13 user stories are independently testable and prioritized P1-P13.
+- 14 user stories are independently testable and prioritized P1-P14.
+- US14 (Comprehensive Documentation for New Features) added to cover README, user guide, and example script updates for all 8 new SDK capabilities.
+- FR-034 through FR-037 added for documentation requirements; SC-013 and SC-014 added as measurable success criteria for documentation coverage.
+- Edge case added: user following README examples with an older SDK version that lacks documented features.

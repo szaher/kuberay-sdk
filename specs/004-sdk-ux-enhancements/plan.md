@@ -1,23 +1,25 @@
-# Implementation Plan: SDK UX & Developer Experience Enhancements
+# Implementation Plan: Comprehensive Documentation for New SDK Features (US14)
 
-**Branch**: `004-sdk-ux-enhancements` | **Date**: 2026-02-23 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/004-sdk-ux-enhancements/spec.md`
+**Branch**: `004-sdk-ux-enhancements` | **Date**: 2026-02-24 | **Spec**: [spec.md](spec.md)
+**Input**: US14 amendment to feature specification — documentation for 8 new SDK capabilities.
+
+**Note**: This plan covers **only US14** (Comprehensive Documentation for New Features). The prior plan covered US1–US13 implementation, which is complete (62 tasks, 692 tests passing). This is a documentation-only plan — no new source code.
 
 ## Summary
 
-This feature enhances the kuberay-sdk with 13 improvements across error handling, progress feedback, configuration, developer ergonomics, dry-run mode, presets, compound operations, retry jitter, a CLI tool, capability discovery, and documentation. The approach modifies existing modules (errors, retry, config, client, handles, `__init__`) and adds new modules (presets, CLI, capabilities). All changes extend the existing architecture without breaking the public API.
+All 8 new SDK capabilities (dry-run mode, presets, progress callbacks, CLI tool, capability discovery, compound operations, config file/env var support, convenience re-exports) shipped without documentation updates. This plan covers updating the README, creating a new user guide page, writing standalone example scripts, and adding a CLI command reference page to the docs site. All examples must be standalone (no live cluster required) and include version annotations per the clarification session.
 
 ## Technical Context
 
-**Language/Version**: Python 3.10+
-**Primary Dependencies**: `kubernetes` (official Python client), `kube-authkit` (auth delegation), `httpx` (Dashboard REST), `pydantic` (model validation), `PyYAML` (config files), `click` (CLI framework — new dependency)
-**Storage**: `~/.kuberay/config.yaml` (user-level YAML config file — new)
-**Testing**: pytest (unit, contract, integration, e2e)
-**Target Platform**: Any environment with kubeconfig access to a KubeRay-enabled Kubernetes cluster
-**Project Type**: Python library + CLI tool
-**Performance Goals**: N/A (SDK operations are bound by Kubernetes API latency)
-**Constraints**: Must not break existing public API. All new parameters must have defaults preserving current behavior.
-**Scale/Scope**: 13 user stories, ~20 modified/new source files, ~15 new test files
+**Language/Version**: Python 3.10+ (example scripts), Markdown (documentation)
+**Primary Dependencies**: MkDocs (1.6.x), Material for MkDocs (9.7.x), ruff (syntax validation of examples)
+**Storage**: N/A (static documentation files)
+**Testing**: `ruff check examples/` for example syntax validation (SC-014)
+**Target Platform**: GitHub Pages (docs site), pip-installed package (README bundled)
+**Project Type**: Documentation (no new source code)
+**Performance Goals**: N/A
+**Constraints**: Must follow existing doc site style and MkDocs conventions; examples must be standalone (clarification session)
+**Scale/Scope**: 8 features to document across 3 documentation targets (README, user guide, example scripts) + 1 CLI reference page
 
 ## Constitution Check
 
@@ -25,14 +27,13 @@ This feature enhances the kuberay-sdk with 13 improvements across error handling
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| **I. API-First Design** | PASS | All new public methods and classes defined as contracts before implementation. New types (`ProgressStatus`, `Preset`, `ClusterCapabilities`, `DryRunResult`) documented in data-model.md. |
-| **II. User-Centric Abstraction** | PASS | Core goal of this feature. Remediation hints use Ray/ML terms. Presets hide K8s complexity. CLI provides non-Python access. |
-| **III. Progressive Disclosure** | PASS | All new features are additive/optional — `dry_run`, `progress_callback`, `preset` are keyword-only parameters with defaults. Config file is opt-in. |
-| **IV. Test-First (NON-NEGOTIABLE)** | PASS | TDD approach: tests written before implementation for each user story. |
-| **V. Simplicity & YAGNI** | PASS | Each feature addresses a concrete current use case documented in the spec. No speculative abstractions. Click dependency justified by CLI requirement (US10). |
-| **Tech Stack: Dependencies** | REQUIRES JUSTIFICATION | Adding `click` as new dependency for CLI (see Complexity Tracking). |
-| **Tech Stack: Python 3.10+** | PASS | All code targets Python 3.10+. |
-| **Development Workflow** | PASS | PR-based, tests required, ruff+mypy in CI, docstrings for public API. |
+| I. API-First Design | PASS | "Every public function and class MUST include docstrings with usage examples." US14 documents the public API usage of 8 new features. No new API surface introduced. |
+| II. User-Centric Abstraction | PASS | Documentation must hide Kubernetes complexity. Examples use SDK abstractions (presets, dry-run, config files), not raw K8s manifests. |
+| III. Progressive Disclosure | PASS | "Documentation MUST clearly separate 'Getting Started' from 'Advanced Configuration'." The README covers quick-start snippets; the user guide page provides detailed usage. |
+| IV. Test-First | PASS | Example scripts are validated by `ruff check examples/` (SC-014). No implementation code to TDD — this is documentation only. |
+| V. Simplicity & YAGNI | PASS | Each example script covers one feature with minimal code. No speculative documentation beyond the 8 shipped features. |
+
+All gates pass. Proceeding to Phase 0.
 
 ## Project Structure
 
@@ -40,75 +41,141 @@ This feature enhances the kuberay-sdk with 13 improvements across error handling
 
 ```text
 specs/004-sdk-ux-enhancements/
-├── plan.md              # This file
-├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output
-│   ├── errors.md        # Remediation attribute contract
-│   ├── progress.md      # Progress callback contract
-│   ├── config.md        # Config file + env var contract
-│   ├── handles.md       # Handle repr contract
-│   ├── dry-run.md       # Dry-run mode contract
-│   ├── presets.md       # Preset configurations contract
-│   ├── cli.md           # CLI tool contract
-│   └── capabilities.md  # Capability discovery contract
-└── tasks.md             # Phase 2 output (/speckit.tasks)
+├── plan.md              # This file (US14 documentation plan)
+├── research.md          # Phase 0 output (US14 addendum)
+├── data-model.md        # Phase 1 output (documentation artifacts model)
+├── quickstart.md        # Phase 1 output (already complete from prior plan)
+├── contracts/           # Phase 1 output (documentation contracts)
+│   └── documentation.md # New: documentation structure contract
+└── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 
-### Source Code (repository root)
+### Source Code (documentation deliverables)
 
 ```text
-src/kuberay_sdk/
-├── __init__.py              # MODIFY: Add convenience re-exports (US5)
-├── errors.py                # MODIFY: Add remediation attribute (US1)
-├── retry.py                 # MODIFY: Add jitter to backoff (US9)
-├── config.py                # MODIFY: Add config file + env var loading (US3)
-├── client.py                # MODIFY: Add dry_run, preset, compound ops, progress_callback (US2,6,7,8)
-├── async_client.py          # MODIFY: Add dry_run, progress_callback (US2,6)
-├── presets.py               # NEW: Preset configurations (US7)
-├── capabilities.py          # NEW: Capability discovery (US11)
-├── models/
-│   ├── __init__.py          # MODIFY: Re-export new models
-│   ├── progress.py          # NEW: ProgressStatus model (US2)
-│   └── capabilities.py     # NEW: ClusterCapabilities model (US11)
-├── cli/                     # NEW: CLI tool (US10)
-│   ├── __init__.py
-│   ├── main.py              # Click app entry point
-│   ├── cluster.py           # kuberay cluster subcommands
-│   ├── job.py               # kuberay job subcommands
-│   ├── service.py           # kuberay service subcommands
-│   └── formatters.py        # Table/JSON output formatting
-└── services/                # Existing — no structural changes
+# Files to CREATE
+docs/user-guide/new-features.md              # New user guide page for 8 features
+docs/user-guide/cli-reference.md             # CLI command reference page
 
-tests/
-├── unit/
-│   ├── test_errors.py       # MODIFY: Test remediation attribute
-│   ├── test_retry.py        # MODIFY: Test jitter
-│   ├── test_config_file.py  # NEW: Config file loading tests
-│   ├── test_handles_repr.py # NEW: Handle __repr__ tests
-│   ├── test_imports.py      # NEW: Convenience import tests
-│   ├── test_dry_run.py      # NEW: Dry-run mode tests
-│   ├── test_presets.py      # NEW: Preset configuration tests
-│   ├── test_compound.py     # NEW: Compound operations tests
-│   ├── test_progress.py     # NEW: Progress callback tests
-│   ├── test_capabilities.py # NEW: Capability discovery tests
-│   └── test_cli.py          # NEW: CLI tests
-├── contract/                # Existing — extend as needed
-└── docs/
-    ├── test_troubleshooting.py # NEW: Verify troubleshooting doc exists
-    └── test_migration.py       # NEW: Verify migration guide exists
+examples/dry_run_preview.py                  # Standalone dry-run example
+examples/presets_usage.py                    # Preset configuration example
+examples/progress_callbacks.py               # Progress callback example
+examples/cli_usage.sh                        # CLI tool usage example (shell script)
+examples/capability_discovery.py             # Capability discovery example
+examples/compound_operations.py              # Compound operation example
+examples/config_and_env_vars.py              # Config file and env var example
+examples/convenience_imports.py              # Top-level import example
 
-docs/
-├── user-guide/
-│   ├── troubleshooting.md   # NEW: Troubleshooting guide (US12)
-│   └── migration.md         # NEW: Migration guide (US13)
+# Files to MODIFY
+README.md                                    # Add 8 new feature sections
+mkdocs.yml                                   # Add nav entries for new pages
+docs/examples/index.md                       # Add links to new example scripts
+
+# Existing files (NO changes needed for US14)
+docs/user-guide/configuration.md             # Already covers SDKConfig basics
+docs/user-guide/error-handling.md            # Already covers error hierarchy
+docs/user-guide/troubleshooting.md           # US12 deliverable
+docs/user-guide/migration.md                 # US13 deliverable
 ```
 
-**Structure Decision**: Extends existing single-project structure. New `cli/` subpackage under `src/kuberay_sdk/` for the CLI tool. New model files for new entities. Documentation files added under existing `docs/` MkDocs structure.
+**Structure Decision**: Documentation-only plan. No new source code directories. New files follow existing conventions: docs pages in `docs/user-guide/`, example scripts in `examples/`.
+
+## Documentation Gap Analysis
+
+### What EXISTS (pre-US14)
+
+| Area | Coverage |
+|------|----------|
+| README | Core features: handle-based API, cluster/job/service CRUD, OpenShift, Kueue, async client, retry, auth delegation. **No mention** of dry-run, presets, progress callbacks, CLI, capabilities, compound ops, config file/env vars, convenience imports. |
+| docs/user-guide/ | 12 pages covering: installation, quick-start, cluster management, job submission, Ray Serve, storage, OpenShift, experiment tracking, async usage, error handling, configuration, migration, troubleshooting. **None** cover the 8 new features. Configuration page covers `SDKConfig` constructor but NOT config files or env vars. |
+| examples/ | 7 scripts: cluster_basics.py, job_submission.py, advanced_config.py, async_client.py, openshift_features.py, ray_serve_deployment.py, mnist_training.ipynb. **None** demonstrate the 8 new features. |
+| docs site nav | No entries for CLI reference, new features guide, or new example scripts. |
+
+### What US14 DELIVERS
+
+| Deliverable | Requirement | Details |
+|-------------|-------------|---------|
+| README updates | FR-034 | 8 new sections with quick-start snippets, version annotations |
+| User guide page | FR-034, clarification | New `docs/user-guide/new-features.md` page on MkDocs site |
+| CLI reference page | FR-037, clarification | New `docs/user-guide/cli-reference.md` on MkDocs site |
+| Example scripts | FR-035 | 8 standalone scripts (no live cluster) with inline comments |
+| Config precedence docs | FR-036 | Precedence diagram + credential warning in README and user guide |
+| Version annotations | FR-034, clarification | "Added in vX.Y.Z" badge on each new feature section |
+| MkDocs nav updates | — | Add nav entries for new pages and examples |
+
+## Implementation Phases
+
+### Phase A: README Updates (FR-034, FR-036)
+
+Add 8 new sections to `README.md` after the existing "Async Client" section. Each section includes:
+- Feature heading with version annotation (e.g., `*Added in v0.2.0*`)
+- 1-2 sentence description
+- Runnable code snippet (standalone, using dry-run where applicable)
+- For CLI: shell command examples with sample output
+- Config precedence section with explicit `>` ordering and credential warning
+
+Sections to add (in order):
+1. **Convenience Imports** — `from kuberay_sdk import WorkerGroup, RuntimeEnv, StorageVolume`
+2. **Configuration File & Environment Variables** — `~/.kuberay/config.yaml`, `KUBERAY_*` env vars, precedence order, credential warning
+3. **Dry-Run Mode** — `create_cluster(..., dry_run=True)`, `result.to_yaml()`
+4. **Presets** — `preset="dev"`, `list_presets()`
+5. **Progress Callbacks** — `wait_until_ready(progress_callback=...)`
+6. **Compound Operations** — `create_cluster_and_submit_job()`
+7. **Capability Discovery** — `client.get_capabilities()`
+8. **CLI Tool** — `kuberay cluster list`, link to full CLI reference
+
+### Phase B: User Guide Page (FR-034, FR-036)
+
+Create `docs/user-guide/new-features.md` with detailed documentation for each feature:
+- Configuration options and defaults
+- Complete usage examples
+- Edge cases and error handling
+- Cross-links to existing docs (configuration.md, error-handling.md)
+
+Create `docs/user-guide/cli-reference.md` (FR-037) with:
+- Full command tree (`kuberay cluster|job|service` subcommands)
+- All options and flags per subcommand
+- Output format examples (table and JSON)
+- Configuration via flags, env vars, and config file
+
+### Phase C: Example Scripts (FR-035, SC-014)
+
+Create 8 standalone example scripts in `examples/`:
+
+| Script | Feature | Standalone Strategy |
+|--------|---------|---------------------|
+| `convenience_imports.py` | Convenience re-exports | Import validation only, no cluster needed |
+| `config_and_env_vars.py` | Config file/env vars | Write temp config file, set env vars, show precedence |
+| `dry_run_preview.py` | Dry-run mode | `dry_run=True` returns manifest without cluster |
+| `presets_usage.py` | Presets | `list_presets()` + `dry_run=True` with preset |
+| `progress_callbacks.py` | Progress callbacks | Define callback, annotate cluster-required wait step |
+| `compound_operations.py` | Compound operations | Annotate cluster-required step with comments |
+| `capability_discovery.py` | Capability discovery | Annotate cluster-required step with comments |
+| `cli_usage.sh` | CLI tool | Shell script with commands and `# Requires: live cluster` annotations |
+
+Each script:
+- Has a module-level docstring explaining the feature
+- Uses `if __name__ == "__main__":` guard
+- Runs standalone where possible (dry-run, config, imports)
+- Annotates cluster-dependent steps with `# NOTE: Requires a running KubeRay cluster`
+- Passes `ruff check` (SC-014)
+
+### Phase D: MkDocs Nav & Index Updates
+
+Update `mkdocs.yml` nav to add:
+- `user-guide/new-features.md` (under User Guide, after Configuration)
+- `user-guide/cli-reference.md` (under User Guide, after New Features)
+- New example entries under Examples section
+
+Update `docs/examples/index.md` to link to the new example scripts.
+
+### Phase E: Validation
+
+- Run `ruff check examples/` to verify all example scripts pass syntax validation (SC-014)
+- Verify all 8 features documented in README with code snippets (SC-013)
+- Verify no broken cross-links in MkDocs pages
+- Verify version annotations present on all new feature sections
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| New dependency: `click` | CLI tool (US10) requires a CLI framework. Click is the most mature, stable option with extensive ecosystem support. | stdlib `argparse` was considered but lacks: subcommand groups, auto-help generation, shell completion, and produces significantly more boilerplate. |
+No constitution violations. This is a documentation-only plan with no new abstractions, patterns, or dependencies.

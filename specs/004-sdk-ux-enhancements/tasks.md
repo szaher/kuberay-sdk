@@ -294,9 +294,9 @@
 
 ---
 
-## Phase 16: Polish & Cross-Cutting Concerns
+## Phase 16: Polish & Cross-Cutting Concerns (US1–US13)
 
-**Purpose**: Final integration, validation, and cleanup
+**Purpose**: Final integration, validation, and cleanup for US1–US13 implementation
 
 - [x] T057 Update src/kuberay_sdk/models/__init__.py to re-export all new models (ProgressStatus, DryRunResult, ClusterCapabilities) and update `__all__`
 - [x] T058 [P] Run `ruff check src/ tests/` and fix any linting issues across all new files
@@ -304,6 +304,68 @@
 - [x] T060 Run full test suite `pytest tests/` and verify all tests pass (existing 502 + new tests)
 - [x] T061 Verify quickstart.md scenarios work by reviewing implementation matches documented examples in specs/004-sdk-ux-enhancements/quickstart.md
 - [x] T062 Verify all new public classes and functions have docstrings per constitution Principle I (API-First Design): scan src/kuberay_sdk/presets.py, src/kuberay_sdk/capabilities.py, src/kuberay_sdk/models/progress.py, src/kuberay_sdk/models/capabilities.py, src/kuberay_sdk/cli/*.py for missing docstrings
+
+**Checkpoint**: All US1–US13 implementation tasks complete. 692 tests passing, ruff+mypy clean.
+
+---
+
+## Phase 17: User Story 14 — Comprehensive Documentation for New Features (Priority: P14)
+
+**Goal**: Document all 8 new SDK capabilities (dry-run, presets, progress callbacks, CLI, capability discovery, compound ops, config file/env vars, convenience imports) in README, user guide, and example scripts so users can discover and adopt them.
+
+**Independent Test**: Review README for 8 new feature sections with code snippets (SC-013). Run `ruff check examples/` to validate all example scripts pass syntax validation (SC-014). Verify docs site pages render correctly.
+
+### Phase 17a: Example Scripts (FR-035)
+
+**Purpose**: Create 8 standalone example scripts demonstrating each new feature. All scripts must be runnable without a live cluster where possible; cluster-dependent steps annotated with comments.
+
+- [ ] T063 [P] [US14] Create standalone example script for convenience re-exports in examples/convenience_imports.py: import WorkerGroup, RuntimeEnv, StorageVolume, SDKConfig, KubeRayClient from top-level package, print types to verify, include before/after comparison in comments
+- [ ] T064 [P] [US14] Create standalone example script for config file and env vars in examples/config_and_env_vars.py: write temp ~/.kuberay/config.yaml, set KUBERAY_NAMESPACE env var, show precedence (explicit > env > file > defaults), include credential warning comment, clean up temp file
+- [ ] T065 [P] [US14] Create standalone example script for dry-run mode in examples/dry_run_preview.py: call create_cluster(dry_run=True), print result.to_dict() and result.to_yaml(), show validation error on invalid params — fully standalone, no cluster needed
+- [ ] T066 [P] [US14] Create standalone example script for presets in examples/presets_usage.py: call list_presets() and print each preset, create cluster with preset="dev" using dry_run=True, show explicit param override of preset defaults
+- [ ] T067 [P] [US14] Create example script for progress callbacks in examples/progress_callbacks.py: define a progress callback function that prints ProgressStatus fields, show wait_until_ready(progress_callback=on_progress) usage with `# NOTE: Requires a running KubeRay cluster` annotation
+- [ ] T068 [P] [US14] Create example script for compound operations in examples/compound_operations.py: show create_cluster_and_submit_job() method signature and usage with `# NOTE: Requires a running KubeRay cluster` annotation, include error handling showing partial failure behavior
+- [ ] T069 [P] [US14] Create example script for capability discovery in examples/capability_discovery.py: show client.get_capabilities() usage with conditional logic (GPU/Kueue detection), annotate cluster-required step with `# NOTE: Requires a running KubeRay cluster`
+- [ ] T070 [P] [US14] Create CLI usage example shell script in examples/cli_usage.sh: demonstrate kuberay cluster list, kuberay cluster create, kuberay job create, kuberay capabilities, kuberay --help, kuberay cluster list --output json — annotate cluster-dependent commands with `# Requires: live KubeRay cluster`
+
+### Phase 17b: README Updates (FR-034, FR-036)
+
+**Purpose**: Add 8 new feature sections to README.md with quick-start code snippets, version annotations, and config precedence diagram with credential warning.
+
+- [ ] T071 [US14] Add 8 new feature sections to README.md after the existing "Async Client" section. Each section has a heading, `*Added in v0.2.0*` version annotation, 1-2 sentence description, and runnable code snippet. Sections in order: (1) Convenience Imports, (2) Configuration File & Environment Variables (with precedence order and credential warning per FR-036), (3) Dry-Run Mode, (4) Presets, (5) Progress Callbacks, (6) Compound Operations, (7) Capability Discovery, (8) CLI Tool (with link to docs site CLI reference page)
+
+### Phase 17c: Docs Site Pages (FR-034, FR-037)
+
+**Purpose**: Create new user guide page and CLI reference page on the MkDocs docs site.
+
+- [ ] T072 [P] [US14] Create comprehensive user guide page at docs/user-guide/new-features.md covering all 8 new features with detailed usage examples, configuration options, edge cases, and cross-links to existing docs (configuration.md, error-handling.md). Each feature section has `*Added in v0.2.0*` version annotation. Include config precedence diagram with credential warning per FR-036
+- [ ] T073 [P] [US14] Create CLI command reference page at docs/user-guide/cli-reference.md per FR-037 and contracts/documentation.md: overview command tree, global options (--namespace, --output, --config), per-subcommand sections for cluster/job/service with synopsis, options table, and example output (table + JSON), kuberay capabilities command
+
+### Phase 17d: Navigation and Index Updates
+
+**Purpose**: Wire new pages into MkDocs nav and update example index.
+
+- [ ] T074 [US14] Update mkdocs.yml nav to add: `New Features: user-guide/new-features.md` (under User Guide, after Configuration), `CLI Reference: user-guide/cli-reference.md` (under User Guide, after New Features), and new example page entries under Examples section
+- [ ] T075 [P] [US14] Update docs/examples/index.md to add links and descriptions for all 8 new example scripts (convenience_imports.py, config_and_env_vars.py, dry_run_preview.py, presets_usage.py, progress_callbacks.py, compound_operations.py, capability_discovery.py, cli_usage.sh)
+
+### Phase 17e: Validation (SC-013, SC-014)
+
+**Purpose**: Verify all documentation deliverables meet success criteria.
+
+- [ ] T076 [US14] Run `ruff check examples/` to validate all example scripts (including 8 new scripts) pass syntax validation (SC-014). Fix any issues found.
+- [ ] T077 [US14] Verify all 8 new features are documented in README.md with at least one runnable code snippet per feature (SC-013). Verify version annotations present on all new sections. Verify config credential warning present. Verify CLI reference link works.
+
+**Checkpoint**: All US14 documentation deliverables complete. 8 features documented in README, user guide page created, CLI reference page created, 8 example scripts pass ruff check.
+
+---
+
+## Phase 18: Final Polish & Cross-Cutting Concerns
+
+**Purpose**: Final validation across all US1–US14 deliverables
+
+- [ ] T078 Run full test suite `pytest tests/` to verify existing 692 tests still pass after documentation changes
+- [ ] T079 [P] Run `ruff check src/ tests/ examples/` to verify all Python files pass linting
+- [ ] T080 Verify quickstart.md scenarios in specs/004-sdk-ux-enhancements/quickstart.md match the documented examples in README.md and docs/user-guide/new-features.md
 
 ---
 
@@ -316,25 +378,35 @@
 - **User Stories (Phase 3–15)**: All depend on Phase 1 setup completion
   - Most stories are fully independent and can proceed in parallel
   - See inter-story dependencies below
-- **Polish (Phase 16)**: Depends on all user stories being complete
+- **Polish US1–US13 (Phase 16)**: Depends on all US1–US13 stories being complete ✅ DONE
+- **US14 Documentation (Phase 17)**: Depends on Phase 16 completion (documents implemented features)
+- **Final Polish (Phase 18)**: Depends on Phase 17 completion
 
 ### User Story Dependencies
 
-- **US1 (Errors, P1)**: Independent — can start after Phase 1
-- **US2 (Progress, P2)**: Independent — can start after Phase 1. Adds `last_status` to TimeoutError (modifies errors.py after US1 changes)
-- **US3 (Config, P3)**: Independent — can start after Phase 1
-- **US4 (Handles, P4)**: Independent — can start after Phase 1
-- **US5 (Imports, P5)**: Independent — can start after Phase 1. Should run AFTER other stories add new models to avoid merge conflicts in `__init__.py`
-- **US6 (Dry-Run, P6)**: Independent — can start after Phase 1
-- **US7 (Presets, P7)**: Independent — can start after Phase 1
-- **US8 (Compound, P8)**: Soft dependency on US2 (progress_callback param) — can implement without it using `None` default
-- **US9 (Jitter, P9)**: Independent — can start after Phase 1
-- **US10 (CLI, P10)**: Soft dependency on US3 (config loading) and US7 (presets). Can implement with basic functionality first, integrate later.
-- **US11 (Capabilities, P11)**: Independent — can start after Phase 1. US10 T045 has soft dependency.
-- **US12 (Troubleshooting, P12)**: Independent — can start after Phase 1
-- **US13 (Migration, P13)**: Independent — can start after Phase 1
+- **US1 (Errors, P1)**: Independent — can start after Phase 1 ✅ DONE
+- **US2 (Progress, P2)**: Independent — can start after Phase 1. Adds `last_status` to TimeoutError (modifies errors.py after US1 changes) ✅ DONE
+- **US3 (Config, P3)**: Independent — can start after Phase 1 ✅ DONE
+- **US4 (Handles, P4)**: Independent — can start after Phase 1 ✅ DONE
+- **US5 (Imports, P5)**: Independent — can start after Phase 1. Should run AFTER other stories add new models to avoid merge conflicts in `__init__.py` ✅ DONE
+- **US6 (Dry-Run, P6)**: Independent — can start after Phase 1 ✅ DONE
+- **US7 (Presets, P7)**: Independent — can start after Phase 1 ✅ DONE
+- **US8 (Compound, P8)**: Soft dependency on US2 (progress_callback param) — can implement without it using `None` default ✅ DONE
+- **US9 (Jitter, P9)**: Independent — can start after Phase 1 ✅ DONE
+- **US10 (CLI, P10)**: Soft dependency on US3 (config loading) and US7 (presets). Can implement with basic functionality first, integrate later. ✅ DONE
+- **US11 (Capabilities, P11)**: Independent — can start after Phase 1. US10 T045 has soft dependency. ✅ DONE
+- **US12 (Troubleshooting, P12)**: Independent — can start after Phase 1 ✅ DONE
+- **US13 (Migration, P13)**: Independent — can start after Phase 1 ✅ DONE
+- **US14 (Documentation, P14)**: Depends on US1–US13 completion (documents all implemented features). Can start after Phase 16.
 
-### Within Each User Story
+### Within US14
+
+- Example scripts (T063–T070) can all run in parallel — different files
+- README update (T071) can run in parallel with docs site pages (T072, T073) — different files
+- Nav updates (T074, T075) depend on T072 and T073 (pages must exist first)
+- Validation (T076, T077) depends on all prior US14 tasks
+
+### Within Each User Story (US1–US13)
 
 - Tests MUST be written first and confirmed to FAIL before implementation
 - Models before services
@@ -347,63 +419,58 @@
 - The following stories can proceed fully in parallel (different files):
   - US1 (errors.py) + US3 (config.py) + US4 (client.py handles) + US9 (retry.py) + US12 + US13
 - US2, US6, US7, US8, US10 all modify client.py — sequence these or coordinate carefully
+- **US14 parallelism**: All 8 example scripts (T063–T070) can run simultaneously. README (T071), user guide (T072), and CLI reference (T073) can also run simultaneously — all different files.
 
 ---
 
-## Parallel Example: User Story 1
+## Parallel Example: US14 Example Scripts
 
 ```bash
-# Launch test tasks in parallel:
-Task: "Write unit tests for remediation attribute in tests/unit/test_errors.py"
-
-# Then implement sequentially:
-Task: "Add remediation to KubeRayError and all subclasses in src/kuberay_sdk/errors.py"
-Task: "Update translate_k8s_error() with remediation hints in src/kuberay_sdk/errors.py"
+# Launch all 8 example script tasks in parallel (different files, no dependencies):
+Task T063: "Create examples/convenience_imports.py"
+Task T064: "Create examples/config_and_env_vars.py"
+Task T065: "Create examples/dry_run_preview.py"
+Task T066: "Create examples/presets_usage.py"
+Task T067: "Create examples/progress_callbacks.py"
+Task T068: "Create examples/compound_operations.py"
+Task T069: "Create examples/capability_discovery.py"
+Task T070: "Create examples/cli_usage.sh"
 ```
 
-## Parallel Example: Independent Stories
+## Parallel Example: US14 Documentation Pages
 
 ```bash
-# These stories can run simultaneously (no file conflicts):
-Story US1: errors.py modifications
-Story US3: config.py modifications
-Story US9: retry.py modifications
-Story US12: docs/user-guide/troubleshooting.md (new file)
-Story US13: docs/user-guide/migration.md (new file)
+# Launch documentation tasks in parallel (different files):
+Task T071: "Update README.md with 8 new feature sections"
+Task T072: "Create docs/user-guide/new-features.md"
+Task T073: "Create docs/user-guide/cli-reference.md"
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### US1–US13 (Complete)
 
-1. Complete Phase 1: Setup (T001–T005)
-2. Complete Phase 3: User Story 1 — Actionable Errors (T006–T008)
-3. **STOP and VALIDATE**: Verify all errors have `.remediation`, existing 502 tests pass
-4. This alone provides significant UX improvement
+All 62 implementation tasks (T001–T062) are complete with 692 tests passing, ruff+mypy clean.
 
-### Incremental Delivery
+### US14 Delivery (Current Focus)
 
-1. Setup → US1 (errors) → **MVP!**
-2. US9 (jitter, one-line fix) → US4 (handle repr) → US5 (imports) — quick wins
-3. US3 (config files) → US2 (progress callbacks) — medium effort
-4. US6 (dry-run) → US7 (presets) → US8 (compound ops) — build on each other
-5. US10 (CLI) → US11 (capabilities) — larger features
-6. US12 + US13 (docs) — can be done anytime in parallel
-7. Polish → Complete
+1. **Phase 17a**: Create 8 example scripts in parallel (T063–T070) — all different files, max parallelism
+2. **Phase 17b**: Update README with 8 new sections (T071) — can run in parallel with Phase 17c
+3. **Phase 17c**: Create user guide page (T072) + CLI reference page (T073) in parallel
+4. **Phase 17d**: Wire nav entries (T074, T075) — depends on 17c completion
+5. **Phase 17e**: Validate SC-013 and SC-014 (T076, T077)
+6. **Phase 18**: Final polish and cross-validation (T078–T080)
 
-### Parallel Team Strategy
+### Parallel Team Strategy for US14
 
 With multiple developers:
 
-1. Team completes Setup together (Phase 1)
-2. Once Setup is done:
-   - Developer A: US1 (errors) → US2 (progress) → US8 (compound)
-   - Developer B: US3 (config) → US6 (dry-run) → US7 (presets)
-   - Developer C: US9 (jitter) → US4 (handles) → US5 (imports) → US10 (CLI)
-   - Developer D: US11 (capabilities) → US12 + US13 (docs)
-3. Stories integrate independently via different files
+1. Developer A: Example scripts (T063–T070) — 8 files, all parallel
+2. Developer B: README updates (T071) — single file, sequential edits
+3. Developer C: Docs site pages (T072, T073) — 2 files, parallel
+4. Once all content done: Developer A does nav updates (T074, T075) and validation (T076–T080)
 
 ---
 
@@ -412,7 +479,13 @@ With multiple developers:
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
 - Each user story is independently completable and testable
-- Constitution requires tests first (TDD) — write and verify failure before implementing
-- Commit after each completed user story
+- US1–US13: Constitution requires tests first (TDD) — write and verify failure before implementing
+- US14: Documentation-only — no TDD required, validation via `ruff check` and content review
+- Commit after each completed user story or logical group
 - Stop at any checkpoint to validate story independently
 - client.py is modified by US2, US6, US7, US8, US10, US11 — coordinate changes to avoid conflicts
+- US14 example scripts must be standalone (no live cluster required) per clarification session
+- US14 version annotation format: `*Added in v0.2.0*` per research.md R13
+- US14 CLI reference lives on docs site (not README) per clarification session
+- US14 config docs must include credential warning per clarification session
+- Total tasks: 80 (T001–T062 complete, T063–T080 pending for US14)
