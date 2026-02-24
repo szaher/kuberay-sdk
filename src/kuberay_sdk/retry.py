@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import functools
 import logging
+import random
 import time
 from collections.abc import Callable
 from typing import Any, TypeVar
@@ -66,7 +67,7 @@ def with_retry(
                         raise
                     if attempt >= max_attempts:
                         break
-                    delay = backoff_factor * (2 ** (attempt - 1))
+                    delay = random.uniform(0, backoff_factor * (2 ** (attempt - 1)))
                     remaining = timeout - (time.monotonic() - start_time)
                     if remaining <= 0:
                         break

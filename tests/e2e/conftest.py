@@ -16,6 +16,7 @@ import uuid
 import pytest
 
 from kuberay_sdk import KubeRayClient
+from kuberay_sdk.config import SDKConfig
 
 
 def _kubectl(*args: str) -> str:
@@ -60,4 +61,4 @@ def test_namespace() -> str:
 @pytest.fixture(scope="session")
 def sdk_client(test_namespace: str) -> KubeRayClient:
     """Create a KubeRayClient configured for the test namespace."""
-    return KubeRayClient(namespace=test_namespace)
+    return KubeRayClient(config=SDKConfig(namespace=test_namespace))

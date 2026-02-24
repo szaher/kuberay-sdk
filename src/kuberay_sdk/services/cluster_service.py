@@ -350,6 +350,7 @@ class ClusterService:
         namespace: str,
         timeout: float = 300,
         poll_interval: float = 2.0,
+        progress_callback: Any = None,
     ) -> None:
         """Poll until the cluster reaches RUNNING state with head ready.
 
@@ -358,6 +359,9 @@ class ClusterService:
             namespace: Cluster namespace.
             timeout: Maximum seconds to wait.
             poll_interval: Seconds between polls.
+            progress_callback: Optional callable invoked each poll cycle with
+                a ``ProgressStatus`` object. Exceptions raised by the callback
+                are caught and logged (never propagate).
 
         Raises:
             TimeoutError: If the cluster does not become ready within timeout.
@@ -365,7 +369,10 @@ class ClusterService:
         Example:
             >>> svc.wait_until_ready("my-cluster", "default", timeout=300)
         """
+        from kuberay_sdk.models.progress import ProgressStatus
+
         start = time.monotonic()
+        last_progress: ProgressStatus | None = None
 
         while True:
             elapsed = time.monotonic() - start
@@ -373,9 +380,25 @@ class ClusterService:
                 raise TimeoutError(
                     f"wait_until_ready({name})",
                     timeout,
+                    last_status=last_progress,
                 )
 
             status = self.get_status(name, namespace)
+            progress = ProgressStatus(
+                state=status.state,
+                elapsed_seconds=elapsed,
+                message=f"State: {status.state}, head_ready: {status.head_ready}",
+            )
+            last_progress = progress
+
+            if progress_callback is not None:
+                try:
+                    progress_callback(progress)
+                except Exception:
+                    logger.warning(
+                        "Progress callback raised an exception", exc_info=True
+                    )
+
             if status.state == "RUNNING" and status.head_ready:
                 return
 

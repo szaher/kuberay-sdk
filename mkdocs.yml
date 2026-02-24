@@ -116,6 +116,8 @@ nav:
       - Async Usage: user-guide/async-usage.md
       - Error Handling: user-guide/error-handling.md
       - Configuration: user-guide/configuration.md
+      - Migration Guide: user-guide/migration.md
+      - Troubleshooting: user-guide/troubleshooting.md
   - Developer Guide:
       - Architecture: developer-guide/architecture.md
       - Development Setup: developer-guide/development-setup.md

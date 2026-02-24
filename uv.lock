@@ -820,6 +820,7 @@ name = "kuberay-sdk"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "httpx" },
     { name = "kube-authkit" },
     { name = "kubernetes" },
@@ -850,6 +851,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "kube-authkit", specifier = ">=0.4.0" },
     { name = "kubernetes", specifier = ">=28.1.0" },
