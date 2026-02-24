@@ -82,7 +82,12 @@ def capabilities(ctx: click.Context, namespace: str | None, output: str | None) 
             headers = ["CAPABILITY", "STATUS"]
             rows = [
                 ["KubeRay", caps.kuberay_version or "not installed"],
-                ["GPU", ", ".join(caps.gpu_types) if caps.gpu_available and caps.gpu_types else ("not available" if caps.gpu_available is False else "unknown")],
+                [
+                    "GPU",
+                    ", ".join(caps.gpu_types)
+                    if caps.gpu_available and caps.gpu_types
+                    else ("not available" if caps.gpu_available is False else "unknown"),
+                ],
                 ["Kueue", "available" if caps.kueue_available else "not installed"],
                 ["OpenShift", "detected" if caps.openshift else "not detected"],
             ]

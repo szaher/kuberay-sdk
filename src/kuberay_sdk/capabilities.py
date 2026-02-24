@@ -40,9 +40,9 @@ def detect_capabilities(api_client: Any) -> ClusterCapabilities:
                 if crd.metadata.name == "rayclusters.ray.io":
                     labels = crd.metadata.labels or {}
                     annotations = crd.metadata.annotations or {}
-                    caps.kuberay_version = labels.get(
-                        "app.kubernetes.io/version"
-                    ) or annotations.get("controller-gen.kubebuilder.io/version")
+                    caps.kuberay_version = labels.get("app.kubernetes.io/version") or annotations.get(
+                        "controller-gen.kubebuilder.io/version"
+                    )
                     break
 
         # Kueue

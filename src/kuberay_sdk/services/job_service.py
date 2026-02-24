@@ -376,9 +376,7 @@ class JobService:
                 try:
                     progress_callback(progress)
                 except Exception:
-                    logger.warning(
-                        "Progress callback raised an exception", exc_info=True
-                    )
+                    logger.warning("Progress callback raised an exception", exc_info=True)
 
             if status.state.value in _CRD_TERMINAL_STATES:
                 return status
@@ -442,9 +440,7 @@ class JobService:
                 try:
                     progress_callback(progress)
                 except Exception:
-                    logger.warning(
-                        "Progress callback raised an exception", exc_info=True
-                    )
+                    logger.warning("Progress callback raised an exception", exc_info=True)
 
             if job_status in _DASHBOARD_TERMINAL_STATES:
                 return status_dict

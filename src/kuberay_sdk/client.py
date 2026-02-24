@@ -95,9 +95,7 @@ class ClusterHandle:
         svc = ClusterService(self._client._custom_api, self._client._config)
         svc.delete(self._name, self._namespace, force=force)
 
-    def wait_until_ready(
-        self, timeout: float = 300, progress_callback: Any = None
-    ) -> None:
+    def wait_until_ready(self, timeout: float = 300, progress_callback: Any = None) -> None:
         """Block until cluster reaches RUNNING state.
 
         Args:
@@ -314,9 +312,7 @@ class JobHandle:
             from kuberay_sdk.services.dashboard import DashboardClient
 
             dc = DashboardClient(self._dashboard_url)
-            return svc.wait_dashboard_job(
-                dc, self._name, timeout=timeout, progress_callback=progress_callback
-            )
+            return svc.wait_dashboard_job(dc, self._name, timeout=timeout, progress_callback=progress_callback)
         return svc.wait(
             self._name,
             self._namespace,

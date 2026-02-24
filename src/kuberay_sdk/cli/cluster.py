@@ -58,7 +58,9 @@ def cluster() -> None:
 @click.option("--ray-version", default=None, help="Ray version.")
 @click.option("--namespace", "-n", default=None, help="Kubernetes namespace (overrides global).")
 @click.pass_context
-def create(ctx: click.Context, name: str, workers: int, preset: str | None, ray_version: str | None, namespace: str | None) -> None:
+def create(
+    ctx: click.Context, name: str, workers: int, preset: str | None, ray_version: str | None, namespace: str | None
+) -> None:
     """Create a RayCluster."""
     try:
         client = _get_client(ctx)
@@ -101,10 +103,7 @@ def list_clusters(ctx: click.Context, namespace: str | None, output: str | None)
             click.echo(format_json(data))
         else:
             headers = ["NAME", "STATE", "WORKERS", "AGE"]
-            rows = [
-                [c.name, c.state, str(c.workers_ready), _format_age(c.age)]
-                for c in clusters
-            ]
+            rows = [[c.name, c.state, str(c.workers_ready), _format_age(c.age)] for c in clusters]
             click.echo(format_table(headers, rows))
     except KubeRayError as err:
         _handle_error(err)

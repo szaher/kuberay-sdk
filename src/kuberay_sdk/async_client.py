@@ -88,9 +88,7 @@ class AsyncClusterHandle:
         svc = ClusterService(self._client._custom_api, self._client._config)
         await _run_sync(svc.delete, self._name, self._namespace, force)
 
-    async def wait_until_ready(
-        self, timeout: float = 300, progress_callback: Any = None
-    ) -> None:
+    async def wait_until_ready(self, timeout: float = 300, progress_callback: Any = None) -> None:
         """Block until cluster reaches RUNNING state.
 
         Args:

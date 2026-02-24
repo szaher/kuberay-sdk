@@ -193,9 +193,7 @@ def load_env_vars() -> dict[str, Any]:
         try:
             result["retry_backoff_factor"] = float(backoff)
         except ValueError as err:
-            raise ValueError(
-                f"Invalid KUBERAY_RETRY_BACKOFF_FACTOR value: {backoff!r} (must be a number)"
-            ) from err
+            raise ValueError(f"Invalid KUBERAY_RETRY_BACKOFF_FACTOR value: {backoff!r} (must be a number)") from err
 
     return result
 

@@ -97,10 +97,7 @@ def list_services(ctx: click.Context, namespace: str | None, output: str | None)
             click.echo(format_json(data))
         else:
             headers = ["NAME", "STATE", "REPLICAS", "AGE"]
-            rows = [
-                [s.name, s.state, str(s.replicas_ready), _format_age(s.age)]
-                for s in services
-            ]
+            rows = [[s.name, s.state, str(s.replicas_ready), _format_age(s.age)] for s in services]
             click.echo(format_table(headers, rows))
     except KubeRayError as err:
         _handle_error(err)

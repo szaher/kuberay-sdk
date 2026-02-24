@@ -395,9 +395,7 @@ class ClusterService:
                 try:
                     progress_callback(progress)
                 except Exception:
-                    logger.warning(
-                        "Progress callback raised an exception", exc_info=True
-                    )
+                    logger.warning("Progress callback raised an exception", exc_info=True)
 
             if status.state == "RUNNING" and status.head_ready:
                 return
