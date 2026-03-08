@@ -195,6 +195,12 @@ def load_env_vars() -> dict[str, Any]:
         except ValueError as err:
             raise ValueError(f"Invalid KUBERAY_RETRY_BACKOFF_FACTOR value: {backoff!r} (must be a number)") from err
 
+    # KUBERAY_DISPLAY: Override display backend detection (rich, notebook, plain, auto).
+    # Read directly by kuberay_sdk.display._detect; documented here for consistency.
+    display_mode = os.environ.get("KUBERAY_DISPLAY")
+    if display_mode is not None:
+        result["display_mode"] = display_mode.lower().strip()
+
     return result
 
 

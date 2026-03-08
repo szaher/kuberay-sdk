@@ -52,6 +52,34 @@ def format_table(headers: list[str], rows: list[list[str]]) -> str:
     return "\n".join(lines)
 
 
+def format_rich_table(
+    headers: list[str],
+    rows: list[list[str]],
+    *,
+    title: str | None = None,
+    state_column: int | None = None,
+) -> None:
+    """Render a table using the rich display backend if available.
+
+    Falls back to plain text format_table() when rich is not installed.
+
+    Args:
+        headers: Column header names.
+        rows: Row data as list of string lists.
+        title: Optional table title.
+        state_column: Column index with state values for color coding.
+    """
+    try:
+        from kuberay_sdk.display import get_backend
+
+        backend = get_backend()
+        backend.render_table(headers, rows, title=title, state_column=state_column)
+    except Exception:
+        if title:
+            print(title)
+        print(format_table(headers, rows))
+
+
 def format_json(data: Any) -> str:
     """Format data as indented JSON.
 

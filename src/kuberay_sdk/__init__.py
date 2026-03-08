@@ -22,6 +22,7 @@ __all__ = [
     "ServiceConfig",
     "StorageVolume",
     "WorkerGroup",
+    "display",
 ]
 
 # Lazy-loaded names and their source modules
@@ -35,6 +36,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "ServiceConfig": ("kuberay_sdk.models.service", "ServiceConfig"),
     "StorageVolume": ("kuberay_sdk.models.storage", "StorageVolume"),
     "WorkerGroup": ("kuberay_sdk.models.cluster", "WorkerGroup"),
+    "display": ("kuberay_sdk.display", "display"),
 }
 
 

@@ -49,6 +49,19 @@ dev = [
     "types-PyYAML>=6.0.0",
 ]
 
+rich = [
+    "rich>=13.0",
+]
+
+notebook = [
+    "ipywidgets>=8.0",
+]
+
+display = [
+    "rich>=13.0",
+    "ipywidgets>=8.0",
+]
+
 docs = [
     "mkdocs>=1.6,<2",
     "mkdocs-material>=9.7,<10",
