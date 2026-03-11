@@ -29,9 +29,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.9+: Follow standard conventions
 
 ## Recent Changes
+- 005-rich-display-output: Added Python 3.10+
 - 004-sdk-ux-enhancements: Added Python 3.10+ (example scripts), Markdown (documentation) + MkDocs (1.6.x), Material for MkDocs (9.7.x), ruff (syntax validation of examples)
 - 004-sdk-ux-enhancements: Added Python 3.10+ + `kubernetes` (official Python client), `kube-authkit` (auth delegation), `httpx` (Dashboard REST), `pydantic` (model validation), `PyYAML` (config files), `click` (CLI framework — new dependency)
-- 003-ci-release-contributing: Added Python 3.10+ (existing project requirement) + GitHub Actions, ruff (linting), mypy (type checking), pytest (testing), uv (dependency management), hatchling (build backend)
 
 
 <!-- MANUAL ADDITIONS START -->

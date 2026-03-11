@@ -20,3 +20,29 @@ Monitor long-running wait operations with a progress callback function.
 ```python title="examples/progress_callbacks.py"
 --8<-- "examples/progress_callbacks.py"
 ```
+
+---
+
+## Auto Progress Bars (v0.3.0+)
+
+With `kuberay-sdk[rich]` or `kuberay-sdk[notebook]` installed, wait operations display progress bars automatically — no callback needed:
+
+```python
+from kuberay_sdk import KubeRayClient
+
+client = KubeRayClient()
+cluster = client.create_cluster("my-cluster", workers=4)
+
+# Progress bar appears automatically
+cluster.wait_until_ready()
+
+# Disable per-call
+cluster.wait_until_ready(progress=False)
+
+# Explicit callback still takes precedence
+cluster.wait_until_ready(progress_callback=my_callback)
+```
+
+In notebooks, the progress bar renders as an ipywidgets widget inline in the cell.
+
+See [Rich Display & Notebook Integration](../user-guide/rich-display.md) for setup and configuration.

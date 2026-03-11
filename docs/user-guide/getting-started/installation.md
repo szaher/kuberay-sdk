@@ -42,6 +42,23 @@ config = SDKConfig(
 client = KubeRayClient(config=config)
 ```
 
+## Optional Extras
+
+The base package provides all SDK functionality with plain text output. Install optional extras for enhanced display:
+
+```bash
+# Rich terminal output (styled tables, progress bars, colored logs)
+pip install kuberay-sdk[rich]
+
+# Notebook widgets (HTML tables, ipywidgets progress bars, action buttons)
+pip install kuberay-sdk[notebook]
+
+# Both terminal and notebook support
+pip install kuberay-sdk[display]
+```
+
+See [Rich Display & Notebook Integration](../rich-display.md) for usage details.
+
 ## Verify the installation
 
 After installing, verify that the SDK can connect to your cluster and detect the KubeRay operator:

@@ -26,6 +26,34 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _make_auto_progress_callback(timeout: float) -> Any:
+    """Create an auto-progress callback using the detected display backend.
+
+    Returns a callable that wraps ``ProgressContext.update()`` for use
+    as a ``progress_callback`` in wait operations.
+    Returns None if no display backend can provide progress.
+    """
+    try:
+        from kuberay_sdk.display import get_backend
+        from kuberay_sdk.display._backend import PlainBackend
+
+        backend = get_backend()
+        # PlainBackend progress is a no-op, so return None to avoid overhead
+        if isinstance(backend, PlainBackend):
+            return None
+        ctx = backend.render_progress(timeout)
+        ctx.__enter__()
+
+        def _callback(status: Any) -> None:
+            ctx.update(status)
+
+        # Attach the context so it can be cleaned up
+        _callback._progress_ctx = ctx  # type: ignore[attr-defined]
+        return _callback
+    except Exception:
+        return None
+
+
 # ──────────────────────────────────────────────
 # Resource handles
 # ──────────────────────────────────────────────
@@ -52,6 +80,25 @@ class ClusterHandle:
 
     def __repr__(self) -> str:
         return f"ClusterHandle(name={self._name!r}, namespace={self._namespace!r})"
+
+    def _repr_html_(self) -> str | None:
+        """Render HTML summary card for Jupyter notebook display."""
+        try:
+            from kuberay_sdk.display import get_backend
+            from kuberay_sdk.display._backend import ActionDef
+
+            backend = get_backend()
+            actions = [
+                ActionDef(label="Delete", callback=lambda: self.delete(), destructive=True, icon="trash"),
+                ActionDef(label="Scale Workers", callback=lambda: None, icon="resize"),
+                ActionDef(label="Open Dashboard", callback=lambda: print(self.dashboard_url()), icon="link"),
+            ]
+            return backend.render_html_card(
+                {"Name": self._name, "Namespace": self._namespace, "Type": "ClusterHandle"},
+                actions=actions,
+            )
+        except Exception:
+            return None
 
     @property
     def name(self) -> str:
@@ -95,17 +142,29 @@ class ClusterHandle:
         svc = ClusterService(self._client._custom_api, self._client._config)
         svc.delete(self._name, self._namespace, force=force)
 
-    def wait_until_ready(self, timeout: float = 300, progress_callback: Any = None) -> None:
+    def wait_until_ready(
+        self,
+        timeout: float = 300,
+        progress_callback: Any = None,
+        progress: bool = True,
+    ) -> None:
         """Block until cluster reaches RUNNING state.
 
         Args:
             timeout: Maximum seconds to wait.
             progress_callback: Optional callable invoked each poll cycle with
-                a ``ProgressStatus`` object.
+                a ``ProgressStatus`` object. Takes precedence over ``progress``.
+            progress: When True (default) and no ``progress_callback`` is
+                provided, auto-display a progress bar using the detected
+                display backend. Set to False to suppress progress display.
 
         Example:
             >>> cluster.wait_until_ready(timeout=300)
         """
+        callback = progress_callback
+        if callback is None and progress:
+            callback = _make_auto_progress_callback(timeout)
+
         from kuberay_sdk.services.cluster_service import ClusterService
 
         svc = ClusterService(self._client._custom_api, self._client._config)
@@ -113,7 +172,7 @@ class ClusterHandle:
             self._name,
             self._namespace,
             timeout=timeout,
-            progress_callback=progress_callback,
+            progress_callback=callback,
         )
 
     def dashboard_url(self) -> str:
@@ -228,6 +287,29 @@ class JobHandle:
     def __repr__(self) -> str:
         return f"JobHandle(name={self._name!r}, namespace={self._namespace!r}, mode={self._mode!r})"
 
+    def _repr_html_(self) -> str | None:
+        """Render HTML summary card for Jupyter notebook display."""
+        try:
+            from kuberay_sdk.display import get_backend
+            from kuberay_sdk.display._backend import ActionDef
+
+            backend = get_backend()
+            actions = [
+                ActionDef(label="Stop", callback=lambda: self.stop(), destructive=True, icon="stop"),
+                ActionDef(label="View Logs", callback=lambda: print(self.logs()), icon="log"),
+                ActionDef(
+                    label="Download Artifacts",
+                    callback=lambda: self.download_artifacts("./artifacts"),
+                    icon="download",
+                ),
+            ]
+            return backend.render_html_card(
+                {"Name": self._name, "Namespace": self._namespace, "Mode": self._mode, "Type": "JobHandle"},
+                actions=actions,
+            )
+        except Exception:
+            return None
+
     @property
     def name(self) -> str:
         return self._name
@@ -259,23 +341,46 @@ class JobHandle:
         stream: bool = False,
         follow: bool = False,
         tail: int | None = None,
+        colored: bool = True,
     ) -> str | Iterator[str]:
         """Get job logs.
+
+        Args:
+            stream: If True, return an iterator of log lines.
+            follow: If True and stream=True, follow new log output.
+            tail: Number of lines from the end to return.
+            colored: When True and streaming, render log lines with
+                color-coded log levels using the display backend.
 
         Example:
             >>> # Full logs
             >>> print(job.logs())
-            >>> # Stream in real-time
+            >>> # Stream in real-time (auto-colored)
             >>> for line in job.logs(stream=True, follow=True):
-            ...     print(line)
+            ...     pass  # lines auto-rendered with color
         """
         from kuberay_sdk.services.dashboard import DashboardClient
 
         url = self._dashboard_url or self._get_dashboard_url()
         dc = DashboardClient(url)
         if stream:
-            return dc.stream_logs(self._name, follow=follow)
+            raw_iter = dc.stream_logs(self._name, follow=follow)
+            if colored:
+                return self._colored_log_iter(raw_iter)
+            return raw_iter
         return dc.get_logs(self._name, tail=tail)
+
+    def _colored_log_iter(self, lines: Iterator[str]) -> Iterator[str]:
+        """Wrap a log line iterator with colored rendering."""
+        try:
+            from kuberay_sdk.display import get_backend
+
+            backend = get_backend()
+            for line in lines:
+                backend.render_log_line(line, source=self._name)
+                yield line
+        except Exception:
+            yield from lines
 
     def stop(self) -> None:
         """Stop/cancel the running job.
@@ -294,17 +399,29 @@ class JobHandle:
         else:
             svc.stop(self._name, self._namespace)
 
-    def wait(self, timeout: float = 3600, progress_callback: Any = None) -> Any:
+    def wait(
+        self,
+        timeout: float = 3600,
+        progress_callback: Any = None,
+        progress: bool = True,
+    ) -> Any:
         """Block until job completes. Returns final status.
 
         Args:
             timeout: Maximum seconds to wait.
             progress_callback: Optional callable invoked each poll cycle with
-                a ``ProgressStatus`` object.
+                a ``ProgressStatus`` object. Takes precedence over ``progress``.
+            progress: When True (default) and no ``progress_callback`` is
+                provided, auto-display a progress bar using the detected
+                display backend. Set to False to suppress progress display.
 
         Example:
             >>> job.wait(timeout=3600)
         """
+        callback = progress_callback
+        if callback is None and progress:
+            callback = _make_auto_progress_callback(timeout)
+
         from kuberay_sdk.services.job_service import JobService
 
         svc = JobService(self._client._custom_api, self._client._config)
@@ -312,12 +429,12 @@ class JobHandle:
             from kuberay_sdk.services.dashboard import DashboardClient
 
             dc = DashboardClient(self._dashboard_url)
-            return svc.wait_dashboard_job(dc, self._name, timeout=timeout, progress_callback=progress_callback)
+            return svc.wait_dashboard_job(dc, self._name, timeout=timeout, progress_callback=callback)
         return svc.wait(
             self._name,
             self._namespace,
             timeout=timeout,
-            progress_callback=progress_callback,
+            progress_callback=callback,
         )
 
     def progress(self) -> dict[str, Any]:
@@ -373,6 +490,24 @@ class ServiceHandle:
 
     def __repr__(self) -> str:
         return f"ServiceHandle(name={self._name!r}, namespace={self._namespace!r})"
+
+    def _repr_html_(self) -> str | None:
+        """Render HTML summary card for Jupyter notebook display."""
+        try:
+            from kuberay_sdk.display import get_backend
+            from kuberay_sdk.display._backend import ActionDef
+
+            backend = get_backend()
+            actions = [
+                ActionDef(label="Delete", callback=lambda: self.delete(), destructive=True, icon="trash"),
+                ActionDef(label="Update Replicas", callback=lambda: None, icon="resize"),
+            ]
+            return backend.render_html_card(
+                {"Name": self._name, "Namespace": self._namespace, "Type": "ServiceHandle"},
+                actions=actions,
+            )
+        except Exception:
+            return None
 
     @property
     def name(self) -> str:

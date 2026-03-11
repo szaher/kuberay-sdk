@@ -116,6 +116,7 @@ nav:
       - Async Usage: user-guide/async-usage.md
       - Error Handling: user-guide/error-handling.md
       - Configuration: user-guide/configuration.md
+      - Rich Display: user-guide/rich-display.md
       - New Features: user-guide/new-features.md
       - CLI Reference: user-guide/cli-reference.md
       - Migration Guide: user-guide/migration.md

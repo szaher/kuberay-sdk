@@ -11,7 +11,7 @@ from typing import Any
 import click
 
 from kuberay_sdk.cli.cluster import cluster
-from kuberay_sdk.cli.formatters import format_json, format_table
+from kuberay_sdk.cli.formatters import format_json, format_rich_table
 from kuberay_sdk.cli.job import job
 from kuberay_sdk.cli.service import service
 from kuberay_sdk.errors import KubeRayError
@@ -91,7 +91,7 @@ def capabilities(ctx: click.Context, namespace: str | None, output: str | None) 
                 ["Kueue", "available" if caps.kueue_available else "not installed"],
                 ["OpenShift", "detected" if caps.openshift else "not detected"],
             ]
-            click.echo(format_table(headers, rows))
+            format_rich_table(headers, rows)
     except KubeRayError as err:
         click.echo(f"Error: {err}", err=True)
         if err.remediation:

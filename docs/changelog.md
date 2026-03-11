@@ -1,5 +1,19 @@
 # What's New
 
+## v0.3.0
+
+### Rich Display & Notebook Integration
+
+- **Display extras**: Install `kuberay-sdk[rich]`, `kuberay-sdk[notebook]`, or `kuberay-sdk[display]` for enhanced output
+- **Auto environment detection**: Automatically selects the best display backend (terminal, notebook, or plain)
+- **Styled tables**: Color-coded resource states in terminal (via Rich) and HTML tables in notebooks
+- **Auto progress bars**: `wait_until_ready()` and `job.wait()` show progress bars automatically (disable with `progress=False`)
+- **Colored log streaming**: Log lines color-coded by level (ERROR, WARNING, INFO)
+- **Notebook resource cards**: Handles render as HTML cards with action buttons when evaluated in notebook cells
+- **`display()` function**: New unified entry point for rendering resource data
+- **`KUBERAY_DISPLAY` env var**: Override auto-detection with `plain`, `rich`, `notebook`, or `auto`
+- **CLI rich tables**: `kuberay cluster list` and other CLI commands use styled tables when `[rich]` is installed
+
 ## v0.1.0 (Initial Release)
 
 ### Highlights

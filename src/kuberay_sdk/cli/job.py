@@ -10,7 +10,7 @@ from typing import Any
 
 import click
 
-from kuberay_sdk.cli.formatters import format_json, format_table
+from kuberay_sdk.cli.formatters import format_json, format_rich_table
 from kuberay_sdk.errors import KubeRayError
 
 
@@ -102,7 +102,7 @@ def list_jobs(ctx: click.Context, namespace: str | None, output: str | None) -> 
                 [j.name, str(j.state), j.entrypoint, _format_age(datetime.now(timezone.utc) - j.submitted_at)]
                 for j in jobs
             ]
-            click.echo(format_table(headers, rows))
+            format_rich_table(headers, rows, state_column=1)
     except KubeRayError as err:
         _handle_error(err)
 
@@ -135,7 +135,7 @@ def get(ctx: click.Context, name: str, namespace: str | None, output: str | None
         else:
             headers = ["NAME", "STATE", "ENTRYPOINT", "AGE"]
             rows = [[status.name, str(status.state), status.entrypoint, _format_age(age)]]
-            click.echo(format_table(headers, rows))
+            format_rich_table(headers, rows, state_column=1)
     except KubeRayError as err:
         _handle_error(err)
 

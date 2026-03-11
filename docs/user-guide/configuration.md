@@ -98,6 +98,31 @@ config = SDKConfig(
 )
 ```
 
+## Display configuration
+
+Control the display backend with the `KUBERAY_DISPLAY` environment variable:
+
+| Value | Behavior |
+|---|---|
+| `auto` (default) | Auto-detect: notebook → terminal (rich) → plain |
+| `plain` | Force plain text output |
+| `rich` | Force rich terminal output (requires `kuberay-sdk[rich]`) |
+| `notebook` | Force notebook output (requires `kuberay-sdk[notebook]`) |
+
+```bash
+export KUBERAY_DISPLAY=plain  # Disable all styled output
+```
+
+Or override programmatically:
+
+```python
+from kuberay_sdk.display import get_backend
+
+backend = get_backend(override="plain")
+```
+
+See [Rich Display & Notebook Integration](rich-display.md) for full details.
+
 ## Default configuration
 
 If no `SDKConfig` is provided, the SDK uses these defaults:
