@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import io
+from typing import TYPE_CHECKING
 
-import pytest
 from rich.console import Console
+
+if TYPE_CHECKING:
+    import pytest
 
 from kuberay_sdk.display._rich_backend import RichBackend
 

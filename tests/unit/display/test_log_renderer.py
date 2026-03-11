@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import io
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
-import pytest
-
 from kuberay_sdk.display._log_renderer import parse_log_level
+
+if TYPE_CHECKING:
+    import pytest
 
 
 class TestParseLogLevel:

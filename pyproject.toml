@@ -79,6 +79,7 @@ packages = ["src/kuberay_sdk"]
 target-version = "py310"
 line-length = 120
 src = ["src", "tests"]
+extend-exclude = ["docs"]
 
 [tool.ruff.lint]
 select = [

@@ -497,6 +497,58 @@ For the full list of commands and options, see [CLI Reference](cli-reference.md)
 
 ---
 
+---
+
+## Rich Display & Notebook Integration
+
+*Added in v0.3.0*
+
+The SDK now provides rich output for terminals and Jupyter notebooks via optional extras.
+
+### Install
+
+```bash
+pip install kuberay-sdk[rich]      # Terminal: styled tables, progress bars, colored logs
+pip install kuberay-sdk[notebook]  # Notebook: HTML tables, widget progress, action buttons
+pip install kuberay-sdk[display]   # Both
+```
+
+### Auto progress bars
+
+Wait operations now show progress bars automatically (no callback needed):
+
+```python
+cluster = client.create_cluster("my-cluster", workers=4)
+cluster.wait_until_ready()  # Shows: ⠋ CREATING ━━━━━━━━━━ 12s
+```
+
+### Display function
+
+A new `display()` function renders resource data with the best available backend:
+
+```python
+from kuberay_sdk.display import display
+
+clusters = client.list_clusters()
+display(clusters)  # Styled table in terminal, HTML table in notebook
+```
+
+### Notebook cards
+
+Resource handles render as styled HTML cards when evaluated in a notebook cell:
+
+```python
+cluster  # Shows card with Name, Namespace, State, and action buttons
+```
+
+### Environment detection
+
+The SDK auto-detects Jupyter, Colab, VS Code notebooks, and TTY terminals. Override with `KUBERAY_DISPLAY=plain|rich|notebook|auto`.
+
+For the full guide, see [Rich Display & Notebook Integration](rich-display.md).
+
+---
+
 ## Next Steps
 
 - [Configuration](configuration.md) -- full configuration reference including auth and retry settings

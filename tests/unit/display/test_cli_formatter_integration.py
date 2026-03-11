@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
-import pytest
-
 from kuberay_sdk.cli.formatters import format_table
+
+if TYPE_CHECKING:
+    import pytest
 
 
 class TestCLIFormatterIntegration:

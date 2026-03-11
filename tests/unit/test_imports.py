@@ -123,6 +123,7 @@ _EXPECTED_REEXPORTS = {
     "ServiceConfig",
     "StorageVolume",
     "WorkerGroup",
+    "display",
 }
 
 
